@@ -9,3 +9,8 @@ class ProveedoresTab(TabFrame):
         label_articulos.pack(expand=True, fill="both")
 
         self.frame.grid(row=0, column=0, sticky="nsew")
+
+    def show(self):
+        self.root.grid_rowconfigure(0, weight=0)
+        self.frame.grid_rowconfigure(0, weight=0)
+        self.frame.tkraise()
