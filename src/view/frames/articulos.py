@@ -69,18 +69,22 @@ class ArticulosTab(TabFrame):
         actions_frame.columnconfigure(1, weight=1)
         tk.Button(actions_frame, text="Seleccionar todo").grid(row=0,column=0,padx=10, pady=10)
         # tk.Button(actions_frame, text="Editar").grid(row=0,column=2,padx=10, pady=10)
-        #TODO Si no hay seleccion, mostrar boton deshabilitado
         self.delete_sel_button = tk.Button(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled")
         self.delete_sel_button.grid(row=0,column=3,padx=10, pady=10)
+
+        #Menu Opciones de registro
+        self.row_menu = tk.Menu(root, tearoff=0)
+        self.row_menu.add_command(label="Editar", command=self.edit_articulo)
+        self.row_menu.add_command(label="Eliminar", command=self.delete_articulo)
 
         # Creacion de Tabla
         self.update_tree()
 
         # Deseleccionar elementos al hacer click fuera 
-        self.frame.bind("<Button-1>", lambda event: self.tree.selection_remove(self.tree.selection()))
-        frame1.bind("<Button-1>", lambda event: self.tree.selection_remove(self.tree.selection()))
-        filter_frame.bind("<Button-1>", lambda event: self.tree.selection_remove(self.tree.selection()))
-        actions_frame.bind("<Button-1>", lambda event: self.tree.selection_remove(self.tree.selection()))
+        self.frame.bind("<Button-1>", lambda event: self.remove_selection())
+        frame1.bind("<Button-1>", lambda event: self.remove_selection())
+        filter_frame.bind("<Button-1>", lambda event: self.remove_selection())
+        actions_frame.bind("<Button-1>", lambda event: self.remove_selection())
     
 
     def show(self):
@@ -101,15 +105,34 @@ class ArticulosTab(TabFrame):
 
         #Habilita/Deshabilita boton de Eliminar Seleccion
         self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_delete_sel_button())
-        
+
         #Deselecciona registros al hacer click en un espacio en blanco de la tabla
-        self.tree.bind("<Button-1>", lambda event: self.tree.selection_remove(self.tree.selection()))
+        self.tree.bind("<Button-1>", lambda event: self.remove_selection())
+
+        # Vincular el menú contextual al TreeView y habilitar la selección al clic derecho
+        self.tree.bind("<Button-3>", self.open_row_menu)
+
+        # Vincular el menú contextual para cerrar al clic izquierdo en cualquier parte del TreeView
+        # self.tree.bind("<Button-1>", lambda event: self.row_menu.unpost())
         
         articulos = self.controller.get_articulos()
         for a in articulos:
             data = (a.codigo, a.descripcion, a.id_proveedor, a.id_marca, a.id_tipo, a.precio_lista, a.stock)
             self.tree.insert('',"end",id=a.id, values=data)
 
+    def open_row_menu(self, event):
+        # Obtener la fila seleccionada
+        item = self.tree.identify_row(event.y)
+        if item:
+            # Seleccionar manualmente la fila
+            self.tree.selection_set(item)
+
+            # Mostrar el menú contextual en las coordenadas del evento
+            self.row_menu.post(event.x_root, event.y_root)
+
+    def remove_selection(self):
+        self.row_menu.unpost()
+        self.tree.selection_remove(self.tree.selection())
 
 
     def update_delete_sel_button(self):
@@ -182,6 +205,11 @@ class ArticulosTab(TabFrame):
         self.controller.delete_articulos_by_id(id_articulos)
         self.update_tree()
 
+    def edit_articulo(self):
+        pass
+
+    def delete_articulo(self):
+        pass
 
 
 """
