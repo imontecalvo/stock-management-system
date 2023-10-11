@@ -17,6 +17,8 @@ class Articulo(db):
 
     def __init__(self, data):
         #TODO agregar chequeo campos
+        if "id" in data.keys():
+            self.id = data["id"]
         self.codigo=data["codigo"]
         self.descripcion=data["descripcion"]
         self.id_proveedor=data["id_proveedor"]

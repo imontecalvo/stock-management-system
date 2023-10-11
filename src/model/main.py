@@ -58,6 +58,7 @@ class Model():
         articulos = []
         for r in res:
             data= {
+                "id":r[0],
                 "codigo":r[1],
                 "descripcion":r[2],
                 "id_proveedor":r[3],
@@ -70,3 +71,13 @@ class Model():
             articulos.append(Articulo(data))
         
         return articulos
+    
+
+    #Recibe una TUPLA con las ID de los articulos a eliminar y los elimina de la tabla Articulo
+    def delete_articulos_by_id(self, id_articulos):
+        query=f"DELETE FROM Articulos WHERE id IN ({', '.join(map(str,id_articulos))});"
+
+        session = self.Session()
+        r=session.execute(text(query))
+        session.commit()
+        session.close()

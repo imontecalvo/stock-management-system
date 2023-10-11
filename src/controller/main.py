@@ -17,3 +17,10 @@ class Controller():
 
         return self.model.get_articulos(filters)
         
+
+    def delete_articulos_by_id(self, id_articulos):
+        if type(id_articulos) is tuple:
+            self.model.delete_articulos_by_id(id_articulos)
+        else:
+            #TODO Retornar error
+            pass
