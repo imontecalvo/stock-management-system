@@ -69,12 +69,7 @@ class ArticulosTab(TabFrame):
         # table_frame.columnconfigure(0, weight=1)
         # table_frame.grid_rowconfigure(0, weight=1)
 
-
-        columns = ("Nombre", "Tipo", "Proveedor", "Stock", "Precio")
-        tree = ttk.Treeview(self.frame, columns=columns, show="headings")
-        for c in columns:
-            tree.heading(c,text=c)
-        tree.grid(row=2,column=0, sticky='nsew',rowspan=1)
+        self.update_tree()
 
         # Table Actions
         actions_frame = tk.Frame(self.frame)
@@ -83,6 +78,7 @@ class ArticulosTab(TabFrame):
         tk.Button(actions_frame, text="Seleccionar todo").grid(row=0,column=0,padx=10, pady=10)
         tk.Button(actions_frame, text="Editar").grid(row=0,column=2,padx=10, pady=10)
         tk.Button(actions_frame, text="Eliminar").grid(row=0,column=3,padx=10, pady=10)
+
 
     def show(self):
         self.root.grid_rowconfigure(0, weight=1)
@@ -146,6 +142,23 @@ class ArticulosTab(TabFrame):
         for field in fields:
             field.delete(0, "end")
 
+        self.update_tree()
+
+
+    def update_tree(self):
+        if hasattr(self, "tree") and self.tree:
+            del self.tree
+
+        columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
+        self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
+        for c in columns:
+            self.tree.heading(c,text=c)
+        self.tree.grid(row=2,column=0, sticky='nsew',rowspan=1)
+
+        articulos = self.controller.get_articulos()
+        for a in articulos:
+            data = (a.codigo, a.descripcion, a.id_proveedor, a.id_marca, a.id_tipo, a.precio_lista, a.stock)
+            self.tree.insert('',"end", values=data)
 
 """
 root

@@ -17,12 +17,12 @@ class Articulo(db):
 
     def __init__(self, data):
         #TODO agregar chequeo campos
-        self.codigo=data["codigo"],
-        self.descripcion=data["descripcion"],
-        self.id_proveedor=data["id_proveedor"],
-        self.id_marca=data["id_marca"],
-        self.id_tipo=data["id_tipo"],
-        self.precio_lista=data["precio_lista"],
-        self.stock=data["stock"],
+        self.codigo=data["codigo"]
+        self.descripcion=data["descripcion"]
+        self.id_proveedor=data["id_proveedor"]
+        self.id_marca=data["id_marca"]
+        self.id_tipo=data["id_tipo"]
+        self.precio_lista=data["precio_lista"]
+        self.stock=data["stock"]
         self.pto_reposicion=data["pto_reposicion"]
         

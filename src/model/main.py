@@ -1,7 +1,7 @@
 from .articulos import Articulo
 from sqlalchemy.orm import sessionmaker
 
-from sqlalchemy import insert
+from sqlalchemy import text
 
 class Model():
     def __init__(self, engine):
@@ -11,10 +11,8 @@ class Model():
     
     # Recibe diccionario con todos los campos de Articulo y lo inserta en la tabla de Articulo
     def add_articulo(self, data):
-        print(f"Data: {data}")
         session = self.Session()
         new_articulo = Articulo(data)
-        print(f"Articulo: {new_articulo}")
 
         session.add(new_articulo)
         # insert(Articulo).values(data)
@@ -23,8 +21,52 @@ class Model():
 
     # Recibe una lista de diccionarios con todos los campos de Articulo y los inserta en la tabla de Articulo
     def add_multiple_articulos(self, data):
+        #TODO No romper cuando haya codigo repetido + otros casos de error (tipos de datos, etc)
         session = self.Session()
         for data_articulo in data:
             new_articulo = Articulo.from_dic(data_articulo)
             session.add(new_articulo)
         session.commit()
+
+    # Recibe un diccionario con filtros válidos, construye la query SQL y retorna lista de Articulos
+    def get_articulos(self, filters={}):
+        query = "SELECT * FROM Articulos"
+        first_cond = False
+        for k in filters.keys():
+            if first_cond:
+                query+=" WHERE "
+            else:    
+                query+=" AND "
+
+            if k[-4:] == "_min":
+                query+= f"{k[:-4]} >= {filters[k]}"
+
+            elif k[-4:] == "_max":
+                query+= f"{k[:-4]} <= {filters[k]}"
+            
+            else:
+                query+= f"{k} LIKE({filters[k]}%)"
+
+            first_cond = True
+        
+        query+=";"
+
+        session = self.Session()
+        res = session.execute(text(query))
+        session.close()
+
+        articulos = []
+        for r in res:
+            data= {
+                "codigo":r[1],
+                "descripcion":r[2],
+                "id_proveedor":r[3],
+                "id_marca":r[4],
+                "id_tipo":r[5],
+                "precio_lista":r[6],
+                "stock":r[7],
+                "pto_reposicion":r[8]
+            }
+            articulos.append(Articulo(data))
+        
+        return articulos
