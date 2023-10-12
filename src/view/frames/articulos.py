@@ -75,7 +75,7 @@ class ArticulosTab(TabFrame):
         #Menu Opciones de registro
         self.row_menu = tk.Menu(root, tearoff=0)
         self.row_menu.add_command(label="Editar", command=self.open_edit_articulo_modal)
-        self.row_menu.add_command(label="Eliminar", command=self.delete_articulo)
+        self.row_menu.add_command(label="Eliminar", command=self.delete_articulos)
 
         # Creacion de Tabla
         self.update_tree()
@@ -208,12 +208,6 @@ class ArticulosTab(TabFrame):
         id_articulos = tuple(int(x) for x in self.tree.selection())
         self.controller.delete_articulos_by_id(id_articulos)
         self.update_tree()
-
-    def update_articulo(self):
-        pass
-
-    def delete_articulo(self):
-        pass
 
     def open_edit_articulo_modal(self):
         articulo_id = self.tree.selection()[0]
