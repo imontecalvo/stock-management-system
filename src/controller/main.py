@@ -24,3 +24,6 @@ class Controller():
         else:
             #TODO Retornar error
             pass
+
+    def update_articulo(self, values):
+        self.model.update_articulo(values)

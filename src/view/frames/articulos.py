@@ -74,7 +74,7 @@ class ArticulosTab(TabFrame):
 
         #Menu Opciones de registro
         self.row_menu = tk.Menu(root, tearoff=0)
-        self.row_menu.add_command(label="Editar", command=self.edit_articulo)
+        self.row_menu.add_command(label="Editar", command=self.open_edit_articulo_modal)
         self.row_menu.add_command(label="Eliminar", command=self.delete_articulo)
 
         # Creacion de Tabla
@@ -101,6 +101,8 @@ class ArticulosTab(TabFrame):
         self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
         for c in columns:
             self.tree.heading(c,text=c)
+            if c == "Codigo":
+                self.tree.column(c, width=100)
         self.tree.grid(row=2,column=0, sticky='nsew',rowspan=1)
 
         #Habilita/Deshabilita boton de Eliminar Seleccion
@@ -117,7 +119,7 @@ class ArticulosTab(TabFrame):
         
         articulos = self.controller.get_articulos()
         for a in articulos:
-            data = (a.codigo, a.descripcion, a.id_proveedor, a.id_marca, a.id_tipo, a.precio_lista, a.stock)
+            data = (a.codigo, a.descripcion, a.id_proveedor, a.id_marca, a.id_tipo, a.precio_lista, a.stock, a.pto_reposicion)
             self.tree.insert('',"end",id=a.id, values=data)
 
     def open_row_menu(self, event):
@@ -130,6 +132,8 @@ class ArticulosTab(TabFrame):
             # Mostrar el menú contextual en las coordenadas del evento
             self.row_menu.post(event.x_root, event.y_root)
 
+
+    #Elimina seleccion y cierra menu en caso de estar abierto cuando se hace click en un la tabla
     def remove_selection(self):
         self.row_menu.unpost()
         self.tree.selection_remove(self.tree.selection())
@@ -205,12 +209,74 @@ class ArticulosTab(TabFrame):
         self.controller.delete_articulos_by_id(id_articulos)
         self.update_tree()
 
-    def edit_articulo(self):
+    def update_articulo(self):
         pass
 
     def delete_articulo(self):
         pass
 
+    def open_edit_articulo_modal(self):
+        articulo_id = self.tree.selection()[0]
+        articulo_data = self.tree.item(articulo_id,"values")
+
+        # Crear una ventana modal personalizada
+        modal = tk.Toplevel(self.root)
+        modal.title("Editar Artículo")
+
+        # Config
+        ventana_principal_ancho = self.root.winfo_width()
+        ventana_principal_alto = self.root.winfo_height()
+
+        modal_ancho = 300
+        modal_alto = 200
+
+        x = (ventana_principal_ancho//2) - (modal_ancho//2)
+        y = (ventana_principal_alto//2)-(modal_alto//2)
+
+        modal.geometry(f"+{x}+{y}")
+
+        # Contenido
+        ttk.Frame(modal).grid(row=0, column=0, pady=5)
+        fields = ["Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion"] #TODO Pedir campos al modelo
+        fields_value = []
+        curr_row = 1
+
+        for idx, field in enumerate(fields):
+            label = tk.Label(modal, text=field)
+            label.grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
+            entry = tk.Entry(modal, textvariable=tk.StringVar(value=articulo_data[idx]))
+            entry.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+            curr_row+=1
+
+            fields_value.append(entry)
+        
+        ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
+
+        # Botón para aceptar y cerrar el modal
+        ttk.Button(modal, text="Cancelar",command=lambda: modal.destroy()).grid(row=curr_row+1, column=1, padx=10, pady=10, sticky='e')
+        ttk.Button(modal, text="Guardar", command=lambda: self.update_articulo(articulo_id,fields_value, modal)).grid(row=curr_row+1, column=2, padx=10, pady=10,sticky='e')
+
+
+    def update_articulo(self, id, fields, modal):
+        #TODO Reemplazar ids de proveedor, tipo y marca
+        #TODO Chequear tipos de datos y Nulls
+
+        values = {
+            "id":int(id),
+            "codigo":fields[0].get(),
+            "descripcion":fields[1].get(),
+            "id_proveedor":int(fields[2].get()),
+            "id_marca":int(fields[3].get()),
+            "id_tipo":int(fields[4].get()),
+            "precio_lista":int(fields[5].get()),
+            "stock":int(fields[6].get()),
+            "pto_reposicion":int(fields[7].get())
+        }
+
+        self.controller.update_articulo(values) #TODO Chequear respuesta del controller y avisar si fallo
+
+        self.update_tree()
+        modal.destroy()
 
 """
 root

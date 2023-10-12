@@ -81,3 +81,10 @@ class Model():
         r=session.execute(text(query))
         session.commit()
         session.close()
+
+    def update_articulo(self, values):
+        session = self.Session()
+        articulo = session.query(Articulo).get(values["id"])
+        if articulo:
+            articulo.update_data(values)
+            session.commit()
