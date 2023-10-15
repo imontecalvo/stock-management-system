@@ -5,6 +5,8 @@ from .tab_frame import TabFrame
 from view.CTkRangeSlider import *
 import customtkinter
 
+from .articulos_filters import ArticulosFilter
+
 
 
 class ArticulosTab(TabFrame):
@@ -28,40 +30,7 @@ class ArticulosTab(TabFrame):
 
 
         #Filter section
-        filter_frame = tk.Frame(self.frame)
-        filter_frame.grid(row=1,column=0,sticky="new")
-        # filter_frame.columnconfigure(0, weight=1)
-        filter_frame.columnconfigure(7, weight=1)
-
-
-        separator = ttk.Separator(filter_frame, orient="horizontal")
-        separator.grid(row=1, column=0, sticky='new',columnspan=10)
-
-        tk.Label(filter_frame, text="Filtrar").grid(row=2, column=0, sticky='nw')
-        tk.Button(filter_frame, text="Limpiar filtros").grid(row=2, column=8, sticky='ne')
-
-        
-        ##Filters
-        tk.Label(filter_frame, text="Descripcion").grid(row=3, column=0, sticky='w')
-        description = tk.Entry(filter_frame).grid(row = 3,column = 1, padx = 10, pady = 10,sticky='ew',columnspan=3)
-
-        tk.Label(filter_frame, text="Precio").grid(row=3, column=4, sticky='w')
-        # description = tk.Entry(filter_frame).grid(row = 3,column=5, padx = 10, pady = 10,sticky='w')
-        range_slider = CTkRangeSlider(filter_frame, command=self.update_price_range)
-        range_slider.grid(row = 3,column=5, padx = 10, pady = 10,sticky='w')
-        
-        self.price_filter = tk.Label(filter_frame, text="$0 - $1")
-        self.price_filter.grid(row=3, column=6, sticky='w')
-
-
-        tk.Label(filter_frame, text="Proveedor").grid(row=4, column=0, sticky='w')
-        supplier = tk.Entry(filter_frame).grid(row = 4,column = 1, padx = 10, pady = 10,sticky='w')
-        
-        tk.Label(filter_frame, text="Marca").grid(row=4, column=2, sticky='w')
-        supplier = tk.Entry(filter_frame).grid(row = 4,column = 3, padx = 10, pady = 10,sticky='w')
-
-        tk.Label(filter_frame, text="Tipo").grid(row=4, column=4, sticky='w')
-        supplier = tk.Entry(filter_frame).grid(row = 4,column = 5, padx = 0, pady = 10,sticky='ew',columnspan=2)
+        filters = ArticulosFilter(self)
 
         # Table Actions
         actions_frame = tk.Frame(self.frame)
@@ -83,7 +52,7 @@ class ArticulosTab(TabFrame):
         # Deseleccionar elementos al hacer click fuera 
         self.frame.bind("<Button-1>", lambda event: self.remove_selection())
         frame1.bind("<Button-1>", lambda event: self.remove_selection())
-        filter_frame.bind("<Button-1>", lambda event: self.remove_selection())
+        filters.filter_frame.bind("<Button-1>", lambda event: self.remove_selection())
         actions_frame.bind("<Button-1>", lambda event: self.remove_selection())
     
 
@@ -93,7 +62,7 @@ class ArticulosTab(TabFrame):
         self.frame.tkraise()
 
     
-    def update_tree(self):
+    def update_tree(self, filters={}):
         if hasattr(self, "tree") and self.tree:
             del self.tree
 
@@ -117,7 +86,7 @@ class ArticulosTab(TabFrame):
         # Vincular el menú contextual para cerrar al clic izquierdo en cualquier parte del TreeView
         # self.tree.bind("<Button-1>", lambda event: self.row_menu.unpost())
         
-        articulos = self.controller.get_articulos()
+        articulos = self.controller.get_articulos(filters)
         for a in articulos:
             data = (a.codigo, a.descripcion, a.id_proveedor, a.id_marca, a.id_tipo, a.precio_lista, a.stock, a.pto_reposicion)
             self.tree.insert('',"end",id=a.id, values=data)

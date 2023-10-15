@@ -8,12 +8,16 @@ class Controller():
     # Recibe lista de filtros, los chequea y hace casteos y devuelve lista de Articulos
     def get_articulos(self, filters={}):
         filter_by = ["descripcion","id_proveedor","id_marca","id_tipo","precio_min","precio_max"]
+        useless_keys = []
         for k in filters.keys():
             if not k in filter_by or filters[k] == "":
-                del filters[k]
+                useless_keys.append(k)
 
-            if k in filter_by[1:]:
+            elif k in filter_by[1:]:
                 filters[k]=int(filters[k])
+
+        for k in useless_keys:
+            del filters[k]
 
         return self.model.get_articulos(filters)
         

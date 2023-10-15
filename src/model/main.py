@@ -31,7 +31,7 @@ class Model():
     # Recibe un diccionario con filtros válidos, construye la query SQL y retorna lista de Articulos
     def get_articulos(self, filters={}):
         query = "SELECT * FROM Articulos"
-        first_cond = False
+        first_cond = True
         for k in filters.keys():
             if first_cond:
                 query+=" WHERE "
@@ -45,9 +45,9 @@ class Model():
                 query+= f"{k[:-4]} <= {filters[k]}"
             
             else:
-                query+= f"{k} LIKE({filters[k]}%)"
+                query+= f"{k} LIKE '{filters[k]}%'"
 
-            first_cond = True
+            first_cond = False
         
         query+=";"
 
