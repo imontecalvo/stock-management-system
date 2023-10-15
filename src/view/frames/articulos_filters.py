@@ -20,7 +20,7 @@ class ArticulosFilter():
         separator.grid(row=1, column=0, sticky='new',columnspan=10)
 
         tk.Label(self.filter_frame, text="Filtrar").grid(row=2, column=0, sticky='nw')
-        tk.Button(self.filter_frame, text="Limpiar filtros").grid(row=2, column=8, sticky='ne')
+        tk.Button(self.filter_frame, text="Limpiar filtros", command=self.clear_filters).grid(row=2, column=8, sticky='ne')
 
         
         ##Filters
@@ -59,16 +59,23 @@ class ArticulosFilter():
         type.bind("<KeyRelease>", lambda event: self.changes_in_filters("id_tipo",type.get()))
         self.filters_dic["id_tipo"]=type.get()
 
+        self.filter_entries = [description, supplier, brand, type]
+        self.default_filters = self.filters_dic.copy()
+
+
 
     def update_price_range(self, value):
         self.price_filter.config(text=f"${value[0]} - ${value[1]}")
 
     def changes_in_filters(self, key, new_value):
-        #filtros = extraer filtros()
-        #self.parent.update_viewtree(filtros)
         self.filters_dic[key]=new_value
         self.parent.update_tree(self.filters_dic)
 
+    def clear_filters(self):
+        self.filters_dic = self.default_filters.copy()
+        for filter in self.filter_entries:
+            filter.delete(0,"end")
+        self.parent.update_tree(self.filters_dic)
 
 
         
