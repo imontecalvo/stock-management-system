@@ -7,6 +7,7 @@ import customtkinter
 
 from .articulos_filters import ArticulosFilter
 
+MISSING_VALUE = "Sin especificar"
 
 
 class ArticulosTab(TabFrame):
@@ -92,9 +93,9 @@ class ArticulosTab(TabFrame):
         
         articulos = self.controller.get_articulos(filters)
         for a in articulos:
-            proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor else "Sin especificar"
-            marca = self.marcas[a.id_marca] if a.id_marca else "Sin especificar"
-            tipo = self.tipos[a.id_tipo] if a.id_tipo else "Sin especificar"
+            proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor else MISSING_VALUE
+            marca = self.marcas[a.id_marca] if a.id_marca else MISSING_VALUE
+            tipo = self.tipos[a.id_tipo] if a.id_tipo else MISSING_VALUE
             data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
             self.tree.insert('',"end",id=a.id, values=data)
 
@@ -121,16 +122,6 @@ class ArticulosTab(TabFrame):
 
 
     def open_new_item_modal(self):
-        def get_options(field):
-            if field == "Proveedor":
-                return ["Sin especificar"]+list(self.proveedores.values())
-            elif field == "Marca":
-                return ["Sin especificar"]+list(self.marcas.values())
-            elif field == "Tipo":
-                return ["Sin especificar"]+list(self.tipos.values())
-            return ["error"]
-            
-
         # Crear una ventana modal personalizada
         modal = tk.Toplevel(self.root)
         modal.title("Nuevo Artículo")
@@ -158,8 +149,8 @@ class ArticulosTab(TabFrame):
             label.grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
             if field in ["Proveedor","Marca","Tipo"]:
                 var = tk.StringVar(modal)
-                var.set("Sin especificar")
-                options = get_options(field)
+                var.set(MISSING_VALUE)
+                options = self.get_field_options(field)
                 dropdown_menu = tk.OptionMenu(modal, var, *options)
                 dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
                 fields_value.append(var)
@@ -179,9 +170,9 @@ class ArticulosTab(TabFrame):
         #TODO Reemplazar ids de proveedor, tipo y marca
         #TODO Chequear tipos de datos y Nulls
 
-        id_proveedor = None if fields[2].get()=="Sin especificar" else get_id_from_value(self.proveedores, fields[2].get())
-        id_marca = None if fields[3].get()=="Sin especificar" else get_id_from_value(self.marcas, fields[3].get())
-        id_tipo = None if fields[4].get()=="Sin especificar" else get_id_from_value(self.tipos, fields[4].get())
+        id_proveedor = None if fields[2].get()==MISSING_VALUE else get_id_from_value(self.proveedores, fields[2].get())
+        id_marca = None if fields[3].get()==MISSING_VALUE else get_id_from_value(self.marcas, fields[3].get())
+        id_tipo = None if fields[4].get()==MISSING_VALUE else get_id_from_value(self.tipos, fields[4].get())
 
         values = {
             "codigo":fields[0].get(),
@@ -198,7 +189,7 @@ class ArticulosTab(TabFrame):
 
         for idx,field in enumerate(fields):
             if 2 <= idx <= 4:
-                field.set("Sin especificar")
+                field.set(MISSING_VALUE)
             else:
                 field.delete(0, "end")
 
@@ -241,8 +232,8 @@ class ArticulosTab(TabFrame):
             label.grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
             if field in ["Proveedor","Marca","Tipo"]:
                 var = tk.StringVar(modal)
-                var.set("Sin especificar")
-                options = ["Opción 1", "Opción 2", "Opción 3", "Opción 4"]
+                var.set(articulo_data[idx])
+                options = self.get_field_options(field)
                 dropdown_menu = tk.OptionMenu(modal, var, *options)
                 dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
                 fields_value.append(var)
@@ -251,7 +242,6 @@ class ArticulosTab(TabFrame):
                 entry.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
                 fields_value.append(entry)
             curr_row+=1
-
         
         ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
 
@@ -263,14 +253,17 @@ class ArticulosTab(TabFrame):
     def update_articulo(self, id, fields, modal):
         #TODO Reemplazar ids de proveedor, tipo y marca
         #TODO Chequear tipos de datos y Nulls
+        id_proveedor = None if fields[2].get()==MISSING_VALUE else get_id_from_value(self.proveedores, fields[2].get())
+        id_marca = None if fields[3].get()==MISSING_VALUE else get_id_from_value(self.marcas, fields[3].get())
+        id_tipo = None if fields[4].get()==MISSING_VALUE else get_id_from_value(self.tipos, fields[4].get())
 
         values = {
             "id":int(id),
             "codigo":fields[0].get(),
             "descripcion":fields[1].get(),
-            "id_proveedor":int(fields[2].get()),
-            "id_marca":int(fields[3].get()),
-            "id_tipo":int(fields[4].get()),
+            "id_proveedor":id_proveedor,
+            "id_marca":id_marca,
+            "id_tipo":id_tipo,
             "precio_lista":int(fields[5].get()),
             "stock":int(fields[6].get()),
             "pto_reposicion":int(fields[7].get())
@@ -302,6 +295,14 @@ class ArticulosTab(TabFrame):
             tipos_dic[t.id]=t.nombre
         return tipos_dic
     
+    def get_field_options(self, field):
+            if field == "Proveedor":
+                return [MISSING_VALUE]+list(self.proveedores.values())
+            elif field == "Marca":
+                return [MISSING_VALUE]+list(self.marcas.values())
+            elif field == "Tipo":
+                return [MISSING_VALUE]+list(self.tipos.values())
+            return ["error"]
 
 """
 root
