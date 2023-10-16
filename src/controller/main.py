@@ -14,7 +14,8 @@ class Controller():
                 useless_keys.append(k)
 
             elif k in filter_by[1:]:
-                filters[k]=int(filters[k])
+                if filters[k]: #Puede ser None -> NULL en la tabla
+                    filters[k]=int(filters[k])
 
         for k in useless_keys:
             del filters[k]

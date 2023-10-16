@@ -47,6 +47,9 @@ class Model():
             elif k[-4:] == "_max":
                 query+= f"{k[:-4]} <= {filters[k]}"
             
+            if filters[k]==None:
+                query+= f"{k} IS NULL"
+
             else:
                 query+= f"{k} LIKE '{filters[k]}%'"
 

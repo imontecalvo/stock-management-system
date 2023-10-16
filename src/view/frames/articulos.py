@@ -7,7 +7,6 @@ import customtkinter
 
 from .articulos_filters import ArticulosFilter
 
-MISSING_VALUE = "Sin especificar"
 
 
 class ArticulosTab(TabFrame):
@@ -16,6 +15,9 @@ class ArticulosTab(TabFrame):
 
     def __init__(self, root, controller):
         super().__init__(root, controller)
+        
+        self.MISSING_VALUE = "Sin especificar"
+        
         self.frame.grid(row=0, column=0, sticky="nsew")
         self.frame.columnconfigure(0, weight=1)
 
@@ -93,9 +95,9 @@ class ArticulosTab(TabFrame):
         
         articulos = self.controller.get_articulos(filters)
         for a in articulos:
-            proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor else MISSING_VALUE
-            marca = self.marcas[a.id_marca] if a.id_marca else MISSING_VALUE
-            tipo = self.tipos[a.id_tipo] if a.id_tipo else MISSING_VALUE
+            proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor else self.MISSING_VALUE
+            marca = self.marcas[a.id_marca] if a.id_marca else self.MISSING_VALUE
+            tipo = self.tipos[a.id_tipo] if a.id_tipo else self.MISSING_VALUE
             data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
             self.tree.insert('',"end",id=a.id, values=data)
 
@@ -149,7 +151,7 @@ class ArticulosTab(TabFrame):
             label.grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
             if field in ["Proveedor","Marca","Tipo"]:
                 var = tk.StringVar(modal)
-                var.set(MISSING_VALUE)
+                var.set(self.MISSING_VALUE)
                 options = self.get_field_options(field)
                 dropdown_menu = tk.OptionMenu(modal, var, *options)
                 dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
@@ -170,9 +172,9 @@ class ArticulosTab(TabFrame):
         #TODO Reemplazar ids de proveedor, tipo y marca
         #TODO Chequear tipos de datos y Nulls
 
-        id_proveedor = None if fields[2].get()==MISSING_VALUE else get_id_from_value(self.proveedores, fields[2].get())
-        id_marca = None if fields[3].get()==MISSING_VALUE else get_id_from_value(self.marcas, fields[3].get())
-        id_tipo = None if fields[4].get()==MISSING_VALUE else get_id_from_value(self.tipos, fields[4].get())
+        id_proveedor = None if fields[2].get()==self.MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2].get())
+        id_marca = None if fields[3].get()==self.MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3].get())
+        id_tipo = None if fields[4].get()==self.MISSING_VALUE else self.get_id_from_value(self.tipos, fields[4].get())
 
         values = {
             "codigo":fields[0].get(),
@@ -189,7 +191,7 @@ class ArticulosTab(TabFrame):
 
         for idx,field in enumerate(fields):
             if 2 <= idx <= 4:
-                field.set(MISSING_VALUE)
+                field.set(self.MISSING_VALUE)
             else:
                 field.delete(0, "end")
 
@@ -253,9 +255,9 @@ class ArticulosTab(TabFrame):
     def update_articulo(self, id, fields, modal):
         #TODO Reemplazar ids de proveedor, tipo y marca
         #TODO Chequear tipos de datos y Nulls
-        id_proveedor = None if fields[2].get()==MISSING_VALUE else get_id_from_value(self.proveedores, fields[2].get())
-        id_marca = None if fields[3].get()==MISSING_VALUE else get_id_from_value(self.marcas, fields[3].get())
-        id_tipo = None if fields[4].get()==MISSING_VALUE else get_id_from_value(self.tipos, fields[4].get())
+        id_proveedor = None if fields[2].get()==self.MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2].get())
+        id_marca = None if fields[3].get()==self.MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3].get())
+        id_tipo = None if fields[4].get()==self.MISSING_VALUE else self.get_id_from_value(self.tipos, fields[4].get())
 
         values = {
             "id":int(id),
@@ -297,12 +299,17 @@ class ArticulosTab(TabFrame):
     
     def get_field_options(self, field):
             if field == "Proveedor":
-                return [MISSING_VALUE]+list(self.proveedores.values())
+                return [self.MISSING_VALUE]+list(self.proveedores.values())
             elif field == "Marca":
-                return [MISSING_VALUE]+list(self.marcas.values())
+                return [self.MISSING_VALUE]+list(self.marcas.values())
             elif field == "Tipo":
-                return [MISSING_VALUE]+list(self.tipos.values())
+                return [self.MISSING_VALUE]+list(self.tipos.values())
             return ["error"]
+    
+    def get_id_from_value(self, dict, value):
+        for k,v in dict.items():
+            if v==value:
+                return k
 
 """
 root
@@ -313,7 +320,3 @@ root
     L actions_frame -> r3
 """
 
-def get_id_from_value(dict, value):
-    for k,v in dict.items():
-        if v==value:
-            return k
