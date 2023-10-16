@@ -1,4 +1,7 @@
 from .articulos import Articulo
+from .proveedores import Proveedor
+from .marcas import Marca
+from .tipos import Tipo
 from sqlalchemy.orm import sessionmaker
 
 from sqlalchemy import text
@@ -88,3 +91,21 @@ class Model():
         if articulo:
             articulo.update_data(values)
             session.commit()
+
+    def get_proveedores(self):
+        session = self.Session()
+        res = session.query(Proveedor)
+        session.close()
+        return res
+    
+    def get_marcas(self):
+        session = self.Session()
+        res = session.query(Marca)
+        session.close()
+        return res
+    
+    def get_tipos(self):
+        session = self.Session()
+        res = session.query(Tipo)
+        session.close()
+        return res

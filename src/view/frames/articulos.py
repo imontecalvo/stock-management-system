@@ -17,6 +17,10 @@ class ArticulosTab(TabFrame):
         super().__init__(root, controller)
         self.frame.grid(row=0, column=0, sticky="nsew")
         self.frame.columnconfigure(0, weight=1)
+
+        self.proveedores = self.get_proveedores()
+        self.marcas = self.get_marcas()
+        self.tipos = self.get_tipos()
         
         #New item section
         frame1 = tk.Frame(self.frame)
@@ -88,7 +92,10 @@ class ArticulosTab(TabFrame):
         
         articulos = self.controller.get_articulos(filters)
         for a in articulos:
-            data = (a.codigo, a.descripcion, a.id_proveedor, a.id_marca, a.id_tipo, a.precio_lista, a.stock, a.pto_reposicion)
+            proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor else "Sin especificar"
+            marca = self.marcas[a.id_marca] if a.id_marca else "Sin especificar"
+            tipo = self.tipos[a.id_tipo] if a.id_tipo else "Sin especificar"
+            data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
             self.tree.insert('',"end",id=a.id, values=data)
 
     def open_row_menu(self, event):
@@ -114,6 +121,16 @@ class ArticulosTab(TabFrame):
 
 
     def open_new_item_modal(self):
+        def get_options(field):
+            if field == "Proveedor":
+                return ["Sin especificar"]+list(self.proveedores.values())
+            elif field == "Marca":
+                return ["Sin especificar"]+list(self.marcas.values())
+            elif field == "Tipo":
+                return ["Sin especificar"]+list(self.tipos.values())
+            return ["error"]
+            
+
         # Crear una ventana modal personalizada
         modal = tk.Toplevel(self.root)
         modal.title("Nuevo Artículo")
@@ -135,15 +152,23 @@ class ArticulosTab(TabFrame):
         fields = ["Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion"] #TODO Pedir campos al modelo
         fields_value = []
         curr_row = 1
-        for field in fields:
-            label = ttk.Label(modal, text=field)
+
+        for idx, field in enumerate(fields):
+            label = tk.Label(modal, text=field)
             label.grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
-            entry = ttk.Entry(modal)
-            entry.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+            if field in ["Proveedor","Marca","Tipo"]:
+                var = tk.StringVar(modal)
+                var.set("Sin especificar")
+                options = get_options(field)
+                dropdown_menu = tk.OptionMenu(modal, var, *options)
+                dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+                fields_value.append(var)
+            else:
+                entry = tk.Entry(modal)
+                entry.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+                fields_value.append(entry)
             curr_row+=1
 
-            fields_value.append(entry)
-        
         ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
 
         # Botón para aceptar y cerrar el modal
@@ -154,12 +179,16 @@ class ArticulosTab(TabFrame):
         #TODO Reemplazar ids de proveedor, tipo y marca
         #TODO Chequear tipos de datos y Nulls
 
+        id_proveedor = None if fields[2].get()=="Sin especificar" else get_id_from_value(self.proveedores, fields[2].get())
+        id_marca = None if fields[3].get()=="Sin especificar" else get_id_from_value(self.marcas, fields[3].get())
+        id_tipo = None if fields[4].get()=="Sin especificar" else get_id_from_value(self.tipos, fields[4].get())
+
         values = {
             "codigo":fields[0].get(),
             "descripcion":fields[1].get(),
-            "id_proveedor":int(fields[2].get()),
-            "id_marca":int(fields[3].get()),
-            "id_tipo":int(fields[4].get()),
+            "id_proveedor":id_proveedor,
+            "id_marca":id_marca,
+            "id_tipo":id_tipo,
             "precio_lista":int(fields[5].get()),
             "stock":int(fields[6].get()),
             "pto_reposicion":int(fields[7].get())
@@ -167,8 +196,11 @@ class ArticulosTab(TabFrame):
 
         self.controller.add_articulo(values) #TODO Chequear respuesta del controller y avisar si fallo
 
-        for field in fields:
-            field.delete(0, "end")
+        for idx,field in enumerate(fields):
+            if 2 <= idx <= 4:
+                field.set("Sin especificar")
+            else:
+                field.delete(0, "end")
 
         self.update_tree()
 
@@ -207,11 +239,19 @@ class ArticulosTab(TabFrame):
         for idx, field in enumerate(fields):
             label = tk.Label(modal, text=field)
             label.grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
-            entry = tk.Entry(modal, textvariable=tk.StringVar(value=articulo_data[idx]))
-            entry.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+            if field in ["Proveedor","Marca","Tipo"]:
+                var = tk.StringVar(modal)
+                var.set("Sin especificar")
+                options = ["Opción 1", "Opción 2", "Opción 3", "Opción 4"]
+                dropdown_menu = tk.OptionMenu(modal, var, *options)
+                dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+                fields_value.append(var)
+            else:
+                entry = tk.Entry(modal, textvariable=tk.StringVar(value=articulo_data[idx]))
+                entry.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+                fields_value.append(entry)
             curr_row+=1
 
-            fields_value.append(entry)
         
         ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
 
@@ -241,6 +281,28 @@ class ArticulosTab(TabFrame):
         self.update_tree()
         modal.destroy()
 
+    def get_proveedores(self):
+        proveedores_dic = {}
+        proveedores = self.controller.get_proveedores()
+        for p in proveedores:
+            proveedores_dic[p.id]=p.nombre
+        return proveedores_dic
+    
+    def get_marcas(self):
+        marcas_dic = {}
+        marcas = self.controller.get_marcas()
+        for m in marcas:
+            marcas_dic[m.id]=m.nombre
+        return marcas_dic
+    
+    def get_tipos(self):
+        tipos_dic = {}
+        tipos = self.controller.get_tipos()
+        for t in tipos:
+            tipos_dic[t.id]=t.nombre
+        return tipos_dic
+    
+
 """
 root
  L frameArticulos ->r=0
@@ -249,3 +311,8 @@ root
     L table_frame -> r2
     L actions_frame -> r3
 """
+
+def get_id_from_value(dict, value):
+    for k,v in dict.items():
+        if v==value:
+            return k

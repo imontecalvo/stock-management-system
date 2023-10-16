@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from utils.db import db
 
 class Articulo(db):
@@ -7,9 +7,9 @@ class Articulo(db):
     id = Column(Integer(), primary_key=True)
     codigo = Column(String(10), unique=True)
     descripcion = Column(String(255),nullable=False)
-    id_proveedor = Column(Integer())
-    id_marca = Column(Integer())
-    id_tipo = Column(Integer())
+    id_proveedor = Column(Integer(),ForeignKey('Proveedores.id'))
+    id_marca = Column(Integer(),ForeignKey('Marcas.id'))
+    id_tipo = Column(Integer(),ForeignKey('Tipos.id'))
     precio_lista = Column(Integer())
     stock = Column(Integer(), default=0)
     pto_reposicion = Column(Integer())

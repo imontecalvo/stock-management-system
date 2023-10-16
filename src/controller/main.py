@@ -31,3 +31,12 @@ class Controller():
 
     def update_articulo(self, values):
         self.model.update_articulo(values)
+
+    def get_proveedores(self):
+        return self.model.get_proveedores()
+    
+    def get_marcas(self):
+        return self.model.get_marcas()
+    
+    def get_tipos(self):
+        return self.model.get_tipos()
