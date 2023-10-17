@@ -17,7 +17,8 @@ class ArticulosTab(TabFrame):
         super().__init__(root, controller)
         
         self.MISSING_VALUE = "Sin especificar"
-        
+        self.NUMERIC_INPUTS = ["Stock","Precio de lista", "Punto de reposicion"]
+
         self.frame.grid(row=0, column=0, sticky="nsew")
         self.frame.columnconfigure(0, weight=1)
 
@@ -159,6 +160,8 @@ class ArticulosTab(TabFrame):
             else:
                 entry = tk.Entry(modal)
                 entry.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+                if field in self.NUMERIC_INPUTS:
+                    entry.config(validate="key", validatecommand=(self.root.validate_numeric_input, "%P"))
                 fields_value.append(entry)
             curr_row+=1
 
@@ -242,6 +245,8 @@ class ArticulosTab(TabFrame):
             else:
                 entry = tk.Entry(modal, textvariable=tk.StringVar(value=articulo_data[idx]))
                 entry.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+                if field in self.NUMERIC_INPUTS:
+                    entry.config(validate="key", validatecommand=(self.root.validate_numeric_input, "%P"))
                 fields_value.append(entry)
             curr_row+=1
         

@@ -13,6 +13,8 @@ class View():
         self.root.title("Aplicación con Menú y Frames")
         self.root.attributes("-zoomed", True)
 
+        self.root.validate_numeric_input = self.root.register(self.on_validate_input)        
+
         # Crear la barra de menús
         menubar = tk.Menu(self.root)
 
@@ -37,3 +39,15 @@ class View():
 
     def start(self):
         self.root.mainloop()
+
+    def is_numeric_input(self, P):
+        try:
+            float(P)
+            return True
+        except ValueError:
+            return False
+
+    def on_validate_input(self, P):
+        if self.is_numeric_input(P) or P == "":
+            return True
+        return False
