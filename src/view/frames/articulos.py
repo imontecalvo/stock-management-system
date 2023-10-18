@@ -6,6 +6,7 @@ from view.CTkRangeSlider import *
 import customtkinter
 
 from .articulos_filters import ArticulosFilter
+from .error_window import ErrorWindow
 
 
 
@@ -94,13 +95,17 @@ class ArticulosTab(TabFrame):
         # Vincular el menú contextual para cerrar al clic izquierdo en cualquier parte del TreeView
         # self.tree.bind("<Button-1>", lambda event: self.row_menu.unpost())
         
-        articulos = self.controller.get_articulos(filters)
-        for a in articulos:
-            proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor else self.MISSING_VALUE
-            marca = self.marcas[a.id_marca] if a.id_marca else self.MISSING_VALUE
-            tipo = self.tipos[a.id_tipo] if a.id_tipo else self.MISSING_VALUE
-            data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
-            self.tree.insert('',"end",id=a.id, values=data)
+        r = self.controller.get_articulos(filters)
+        if r.ok:
+            articulos = r.content
+            for a in articulos:
+                proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else self.MISSING_VALUE
+                marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else self.MISSING_VALUE
+                tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
+                data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
+                self.tree.insert('',"end",id=a.id, values=data)
+        else:
+            self.frame.after(100, lambda: ErrorWindow(r.content,self.root))
 
     def open_row_menu(self, event):
         # Obtener la fila seleccionada
@@ -190,21 +195,26 @@ class ArticulosTab(TabFrame):
             "pto_reposicion":int(fields[7].get())
         }
 
-        self.controller.add_articulo(values) #TODO Chequear respuesta del controller y avisar si fallo
-
+        r = self.controller.add_articulo(values) #TODO Chequear respuesta del controller y avisar si fallo
         for idx,field in enumerate(fields):
             if 2 <= idx <= 4:
                 field.set(self.MISSING_VALUE)
             else:
                 field.delete(0, "end")
 
-        self.update_tree()
+        if r.ok:
+            self.update_tree()
+        else:
+            ErrorWindow(r.content, self.frame)
 
     def delete_articulos(self):
         #TODO Mostrar advertencia y consultar confirmacion de borrado
         id_articulos = tuple(int(x) for x in self.tree.selection())
-        self.controller.delete_articulos_by_id(id_articulos)
-        self.update_tree()
+        r = self.controller.delete_articulos_by_id(id_articulos)
+        if r.ok:
+            self.update_tree()
+        else:
+            ErrorWindow(r.content, self.root)
 
     def open_edit_articulo_modal(self):
         articulo_id = self.tree.selection()[0]
@@ -276,30 +286,45 @@ class ArticulosTab(TabFrame):
             "pto_reposicion":int(fields[7].get())
         }
 
-        self.controller.update_articulo(values) #TODO Chequear respuesta del controller y avisar si fallo
-
-        self.update_tree()
+        r = self.controller.update_articulo(values) #TODO Chequear respuesta del controller y avisar si fallo
+        if r.ok:
+            self.update_tree()
+        else:
+            ErrorWindow(r.content, self.root)    
         modal.destroy()
 
     def get_proveedores(self):
         proveedores_dic = {}
-        proveedores = self.controller.get_proveedores()
-        for p in proveedores:
-            proveedores_dic[p.id]=p.nombre
+        
+        r = self.controller.get_proveedores()
+        if r.ok:
+            proveedores=r.content
+            for p in proveedores:
+                proveedores_dic[p.id]=p.nombre
+        else:
+            self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
         return proveedores_dic
     
     def get_marcas(self):
         marcas_dic = {}
-        marcas = self.controller.get_marcas()
-        for m in marcas:
-            marcas_dic[m.id]=m.nombre
+        r = self.controller.get_marcas()
+        if r.ok:
+            marcas = r.content
+            for m in marcas:
+                marcas_dic[m.id]=m.nombre
+        else:
+            self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
         return marcas_dic
     
     def get_tipos(self):
         tipos_dic = {}
-        tipos = self.controller.get_tipos()
-        for t in tipos:
-            tipos_dic[t.id]=t.nombre
+        r = self.controller.get_tipos()
+        if r.ok:
+            tipos = r.content
+            for t in tipos:
+                tipos_dic[t.id]=t.nombre
+        else:
+            self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
         return tipos_dic
     
     def get_field_options(self, field):

@@ -1,9 +1,11 @@
+from utils.response import Response
+
 class Controller():
     def __init__(self, model):
         self.model=model
 
     def add_articulo(self, articulo):
-        self.model.add_articulo(articulo)
+        return self.model.add_articulo(articulo)
 
     # Recibe lista de filtros, los chequea y hace casteos y devuelve lista de Articulos
     def get_articulos(self, filters={}):
@@ -13,7 +15,7 @@ class Controller():
             if not k in filter_by or filters[k] == "":
                 useless_keys.append(k)
 
-            elif k in filter_by[1:]:
+            elif k in filter_by[1:]:#Si es un campo numerico lo casteo a int
                 if filters[k]: #Puede ser None -> NULL en la tabla
                     filters[k]=int(filters[k])
 
@@ -25,13 +27,12 @@ class Controller():
 
     def delete_articulos_by_id(self, id_articulos):
         if type(id_articulos) is tuple:
-            self.model.delete_articulos_by_id(id_articulos)
+            return self.model.delete_articulos_by_id(id_articulos)
         else:
-            #TODO Retornar error
-            pass
+            return Response(False,"ERROR: No se recibió una tupla con ids de articulos")
 
     def update_articulo(self, values):
-        self.model.update_articulo(values)
+        return self.model.update_articulo(values)
 
     def get_proveedores(self):
         return self.model.get_proveedores()
