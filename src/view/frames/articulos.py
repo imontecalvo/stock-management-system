@@ -9,17 +9,19 @@ from .articulos_filters import ArticulosFilter
 from .error_window import ErrorWindow
 
 
-
 class ArticulosTab(TabFrame):
     def update_price_range(self, value):
         self.price_filter.config(text=f"${value[0]} - ${value[1]}")
 
     def __init__(self, root, controller):
         super().__init__(root, controller)
+
         
         self.MISSING_VALUE = "Sin especificar"
         self.NUMERIC_INPUTS = ["Stock","Precio de lista", "Punto de reposicion"]
+        self.COLOR_BG = "#b5e4ff"
 
+        self.frame.config(bg=self.COLOR_BG)
         self.frame.grid(row=0, column=0, sticky="nsew")
         self.frame.columnconfigure(0, weight=1)
 
@@ -27,14 +29,18 @@ class ArticulosTab(TabFrame):
         self.marcas = self.get_marcas()
         self.tipos = self.get_tipos()
         
+        headingLabel =  tk.Label(self.frame, text = 'Articulos', font='candara 25 bold',bg=self.COLOR_BG  )
+        headingLabel.grid(row = 0,column= 0,sticky="w",pady=10, padx=10)
+        
         #New item section
-        frame1 = tk.Frame(self.frame)
-        frame1.grid(row=0,column=0, sticky="nw")
+        frame1 = tk.Frame(self.frame, bg=self.COLOR_BG)
+        frame1.grid(row=1,column=0, sticky="nw")
 
-        new_item_button = tk.Button(frame1, text="Nuevo Artículo",command=self.open_new_item_modal)
+        new_item_button = customtkinter.CTkButton(frame1, text="Nuevo Artículo",command=self.open_new_item_modal, corner_radius=6, font=('arial',16))
         new_item_button.grid(row=0,column=0,padx=10, pady=10)
 
-        import_items_button = tk.Button(frame1, text="Importar desde Excel")
+
+        import_items_button = customtkinter.CTkButton(frame1, text="Importar desde Excel", corner_radius=6, font=('arial',16))
         import_items_button.grid(row=0,column=1,padx=10, pady=10)
 
 
@@ -43,7 +49,7 @@ class ArticulosTab(TabFrame):
 
         # Table Actions
         actions_frame = tk.Frame(self.frame)
-        actions_frame.grid(row=3,column=0,sticky="ew")
+        actions_frame.grid(row=4,column=0,sticky="ew")
         actions_frame.columnconfigure(1, weight=1)
         tk.Button(actions_frame, text="Seleccionar todo").grid(row=0,column=0,padx=10, pady=10)
         # tk.Button(actions_frame, text="Editar").grid(row=0,column=2,padx=10, pady=10)
@@ -67,7 +73,7 @@ class ArticulosTab(TabFrame):
 
     def show(self):
         self.root.grid_rowconfigure(0, weight=1)
-        self.frame.grid_rowconfigure(2, weight=1)
+        self.frame.grid_rowconfigure(3, weight=1)
         self.frame.tkraise()
 
     
@@ -81,7 +87,7 @@ class ArticulosTab(TabFrame):
             self.tree.heading(c,text=c)
             if c == "Codigo":
                 self.tree.column(c, width=100)
-        self.tree.grid(row=2,column=0, sticky='nsew',rowspan=1)
+        self.tree.grid(row=3,column=0, sticky='nsew',rowspan=1, padx=5, pady=5)
 
         #Habilita/Deshabilita boton de Eliminar Seleccion
         self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_delete_sel_button())
