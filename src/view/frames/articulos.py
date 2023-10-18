@@ -53,7 +53,9 @@ class ArticulosTab(TabFrame):
         actions_frame.columnconfigure(1, weight=1)
         tk.Button(actions_frame, text="Seleccionar todo").grid(row=0,column=0,padx=10, pady=10)
         # tk.Button(actions_frame, text="Editar").grid(row=0,column=2,padx=10, pady=10)
-        self.delete_sel_button = tk.Button(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled")
+        # self.delete_sel_button = tk.Button(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled")
+        self.delete_sel_button = customtkinter.CTkButton(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled", corner_radius=6, font=('arial',16))
+
         self.delete_sel_button.grid(row=0,column=3,padx=10, pady=10)
 
         #Menu Opciones de registro
@@ -112,6 +114,8 @@ class ArticulosTab(TabFrame):
                 self.tree.insert('',"end",id=a.id, values=data)
         else:
             self.frame.after(100, lambda: ErrorWindow(r.content,self.root))
+        self.delete_sel_button.configure(state="disabled")
+        
 
     def open_row_menu(self, event):
         # Obtener la fila seleccionada
@@ -132,7 +136,7 @@ class ArticulosTab(TabFrame):
 
     def update_delete_sel_button(self):
         state = "normal" if self.tree.selection() else "disabled"
-        self.delete_sel_button.config(state=state)
+        self.delete_sel_button.configure(state=state)
 
 
     def open_new_item_modal(self):

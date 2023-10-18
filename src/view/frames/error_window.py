@@ -18,4 +18,3 @@ class ErrorWindow():
         y = (ventana_principal_alto//2)-(modal_alto//2)
 
         error_window.geometry(f"+{x}+{y}")
-        error_window.grab_set()
