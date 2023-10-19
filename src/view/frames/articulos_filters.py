@@ -29,7 +29,7 @@ class ArticulosFilter():
         # tk.Label(self.filter_frame, text="Descripcion", bg=parent.COLOR_BG).grid(row=3, column=0, sticky='w')
         customtkinter.CTkLabel(self.filter_frame, text="Descripcion", fg_color="transparent",text_color="black",font=('arial',14)).grid(row=3, column=0, sticky='w',padx= (10,0))
         # description = tk.Entry(self.filter_frame)
-        description = customtkinter.CTkEntry(self.filter_frame, fg_color="white")
+        description = customtkinter.CTkEntry(self.filter_frame, fg_color="white", text_color="black", font=("arial",13.5))
         description.grid(row = 3,column = 1, padx = (5,10), pady = 10,sticky='ew',columnspan=3)
         description.bind("<KeyRelease>", lambda event: self.changes_in_filters("descripcion",description.get()))
         self.filters_dic["descripcion"]=description.get()
