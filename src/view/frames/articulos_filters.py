@@ -4,6 +4,7 @@ from .tab_frame import TabFrame
 
 from view.CTkRangeSlider import *
 import customtkinter
+from ..colors import *
 
 class ArticulosFilter():
     def __init__(self, parent):
@@ -11,35 +12,41 @@ class ArticulosFilter():
         self.parent = parent
         self.filters_dic = {} #Diccionario con los filtros actuales
         
-        self.filter_frame = tk.Frame(parent.frame, bg=parent.COLOR_BG)
-        self.filter_frame.grid(row=2,column=0,sticky="new")
+        self.filter_frame = tk.Frame(parent.frame, bg = WHITE)
+        self.filter_frame.grid(row=2,column=0,sticky="new", padx=5)
         self.filter_frame.columnconfigure(7, weight=1)
 
 
-        separator = ttk.Separator(self.filter_frame, orient="horizontal")
-        separator.grid(row=1, column=0, sticky='new',columnspan=10)
+        # separator = ttk.Separator(self.filter_frame, orient="horizontal")
+        # separator.grid(row=1, column=0, sticky='new',columnspan=10)
 
-        tk.Label(self.filter_frame, text="Filtrar", bg=parent.COLOR_BG).grid(row=2, column=0, sticky='nw')
-        tk.Button(self.filter_frame, text="Limpiar filtros", command=self.clear_filters).grid(row=2, column=8, sticky='ne')
+        tk.Label(self.filter_frame, text="Filtrar", font="arial 14 bold", bg=WHITE).grid(row=2, column=0, sticky='nw', padx= 5)
+        # tk.Button(self.filter_frame, text="Limpiar filtros", command=self.clear_filters).grid(row=2, column=8, sticky='ne')
+        customtkinter.CTkButton(self.filter_frame, text="Limpiar filtros", command=self.clear_filters, corner_radius=20, width=10 , font=('arial',16), text_color=RED, border_color=RED, border_width=1.5, fg_color="transparent", hover_color=LIGHT_GRAY).grid(row=2, column=8, sticky='ne', padx=(0,10), pady=(10,0))
 
         
         ##Filters
-        tk.Label(self.filter_frame, text="Descripcion", bg=parent.COLOR_BG).grid(row=3, column=0, sticky='w')
-        description = tk.Entry(self.filter_frame)
-        description.grid(row = 3,column = 1, padx = 10, pady = 10,sticky='ew',columnspan=3)
+        # tk.Label(self.filter_frame, text="Descripcion", bg=parent.COLOR_BG).grid(row=3, column=0, sticky='w')
+        customtkinter.CTkLabel(self.filter_frame, text="Descripcion", fg_color="transparent",text_color="black",font=('arial',14)).grid(row=3, column=0, sticky='w',padx= (10,0))
+        # description = tk.Entry(self.filter_frame)
+        description = customtkinter.CTkEntry(self.filter_frame, fg_color="white")
+        description.grid(row = 3,column = 1, padx = (5,10), pady = 10,sticky='ew',columnspan=3)
         description.bind("<KeyRelease>", lambda event: self.changes_in_filters("descripcion",description.get()))
         self.filters_dic["descripcion"]=description.get()
 
 
-        tk.Label(self.filter_frame, text="Precio", bg=parent.COLOR_BG).grid(row=3, column=4, sticky='w')
+        # tk.Label(self.filter_frame, text="Precio", bg=parent.COLOR_BG).grid(row=3, column=4, sticky='w')
+        customtkinter.CTkLabel(self.filter_frame, text="Precio", fg_color="transparent",text_color="black",font=('arial',14)).grid(row=3, column=4, sticky='w', padx=(25,5))
+
         range_slider = CTkRangeSlider(self.filter_frame, command=self.update_price_range)
         range_slider.grid(row = 3,column=5, padx = 10, pady = 10,sticky='w')
         
-        self.price_filter = tk.Label(self.filter_frame, text="$0 - $1", bg=parent.COLOR_BG)
+        self.price_filter = tk.Label(self.filter_frame, text="$0 - $1", bg=WHITE)
         self.price_filter.grid(row=3, column=6, sticky='w')
 
 
-        tk.Label(self.filter_frame, text="Proveedor", bg=parent.COLOR_BG).grid(row=4, column=0, sticky='w')
+        # tk.Label(self.filter_frame, text="Proveedor", bg=parent.COLOR_BG).grid(row=4, column=0, sticky='w')
+        customtkinter.CTkLabel(self.filter_frame, text="Proveedor", fg_color="transparent",text_color="black",font=('arial',14)).grid(row=4, column=0, sticky='w',padx= (10,0))
         # supplier = tk.Entry(self.filter_frame)
         # supplier.grid(row = 4,column = 1, padx = 10, pady = 10,sticky='w')
         # supplier.bind("<KeyRelease>", lambda event: self.changes_in_filters("id_proveedor",supplier.get()))
@@ -50,12 +57,14 @@ class ArticulosFilter():
         # supplier = tk.OptionMenu(self.filter_frame, var_supplier, *options_supplier, command=lambda event: self.changes_in_filters("id_proveedor",self.menu_value_to_id(var_supplier.get(),self.parent.proveedores)))
         # supplier.config(width=20)
         supplier = customtkinter.CTkOptionMenu(self.filter_frame, width=220,dynamic_resizing=False, values=options_supplier,font=('arial',14), dropdown_font=('arial',14),variable=var_supplier,command=lambda event: self.changes_in_filters("id_proveedor",self.menu_value_to_id(var_supplier.get(),self.parent.proveedores)))
-        supplier.grid(row = 4,column = 1, padx = 10, pady = 10,sticky='ew')
+        supplier.grid(row = 4,column = 1, padx = (5,30), pady = 10,sticky='ew')
         self.filters_dic["id_proveedor"]=self.menu_value_to_id(var_supplier.get(),self.parent.proveedores)
 
 
 
-        tk.Label(self.filter_frame, text="Marca", bg=parent.COLOR_BG).grid(row=4, column=2, sticky='w')
+        # tk.Label(self.filter_frame, text="Marca", bg=parent.COLOR_BG).grid(row=4, column=2, sticky='w')
+        customtkinter.CTkLabel(self.filter_frame, text="Marca", fg_color="transparent",text_color="black",font=('arial',14)).grid(row=4, column=2, sticky='w')
+
         # brand = tk.Entry(self.filter_frame)
         # brand.grid(row = 4,column = 3, padx = 10, pady = 10,sticky='w')
         # brand.bind("<KeyRelease>", lambda event: self.changes_in_filters("id_marca",brand.get()))
@@ -71,7 +80,9 @@ class ArticulosFilter():
         self.filters_dic["id_marca"]=self.menu_value_to_id(var_brand.get(),self.parent.marcas)
 
 
-        tk.Label(self.filter_frame, text="Tipo", bg=parent.COLOR_BG).grid(row=4, column=4, sticky='w')
+        # tk.Label(self.filter_frame, text="Tipo", bg=parent.COLOR_BG).grid(row=4, column=4, sticky='w')
+        customtkinter.CTkLabel(self.filter_frame, text="Tipo", fg_color="transparent",text_color="black",font=('arial',14)).grid(row=4, column=4, sticky='w', padx=(25,0))
+
         # type = tk.Entry(self.filter_frame)
         # type.grid(row = 4,column = 5, padx = 0, pady = 10,sticky='ew',columnspan=2)
         # type.bind("<KeyRelease>", lambda event: self.changes_in_filters("id_tipo",type.get()))

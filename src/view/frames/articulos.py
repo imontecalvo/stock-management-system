@@ -7,7 +7,7 @@ import customtkinter
 
 from .articulos_filters import ArticulosFilter
 from .error_window import ErrorWindow
-
+from ..colors import *
 
 class ArticulosTab(TabFrame):
     def update_price_range(self, value):
@@ -19,9 +19,8 @@ class ArticulosTab(TabFrame):
         
         self.MISSING_VALUE = "Sin especificar"
         self.NUMERIC_INPUTS = ["Stock","Precio de lista", "Punto de reposicion"]
-        self.COLOR_BG = "#b5e4ff"
 
-        self.frame.config(bg=self.COLOR_BG)
+        self.frame.config(bg=HEADING_COLOR)
         self.frame.grid(row=0, column=0, sticky="nsew")
         self.frame.columnconfigure(0, weight=1)
 
@@ -29,11 +28,11 @@ class ArticulosTab(TabFrame):
         self.marcas = self.get_marcas()
         self.tipos = self.get_tipos()
         
-        headingLabel =  tk.Label(self.frame, text = 'Articulos', font='candara 25 bold',bg=self.COLOR_BG  )
+        headingLabel =  tk.Label(self.frame, text = 'Articulos', font='candara 25 bold',bg=HEADING_COLOR, foreground=WHITE  )
         headingLabel.grid(row = 0,column= 0,sticky="w",pady=10, padx=10)
         
         #New item section
-        frame1 = tk.Frame(self.frame, bg=self.COLOR_BG)
+        frame1 = tk.Frame(self.frame, bg=HEADING_COLOR)
         frame1.grid(row=1,column=0, sticky="nw")
 
         new_item_button = customtkinter.CTkButton(frame1, text="Nuevo Artículo",command=self.open_new_item_modal, corner_radius=6, font=('arial',16))
@@ -54,9 +53,9 @@ class ArticulosTab(TabFrame):
         tk.Button(actions_frame, text="Seleccionar todo").grid(row=0,column=0,padx=10, pady=10)
         # tk.Button(actions_frame, text="Editar").grid(row=0,column=2,padx=10, pady=10)
         # self.delete_sel_button = tk.Button(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled")
-        self.delete_sel_button = customtkinter.CTkButton(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled", corner_radius=6, font=('arial',16))
+        self.delete_sel_button = customtkinter.CTkButton(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled", corner_radius=6, font=('arial',16), fg_color=RED, hover_color=RED_HOVER, border_spacing=8)
 
-        self.delete_sel_button.grid(row=0,column=3,padx=10, pady=10)
+        self.delete_sel_button.grid(row=0,column=3,padx=10, pady=5)
 
         #Menu Opciones de registro
         self.row_menu = tk.Menu(root, tearoff=0)
