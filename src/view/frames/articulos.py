@@ -171,7 +171,7 @@ class ArticulosTab(TabFrame):
                 # dropdown_menu = tk.OptionMenu(modal, var, *options)
                 dropdown_menu = customtkinter.CTkOptionMenu(modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
 
-                dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+                dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
                 fields_value.append(var)
             else:
                 entry = customtkinter.CTkEntry(modal, fg_color="white", text_color="black", font=("_",13.5))
@@ -237,7 +237,7 @@ class ArticulosTab(TabFrame):
         articulo_data = self.tree.item(articulo_id,"values")
 
         # Crear una ventana modal personalizada
-        modal = tk.Toplevel(self.root)
+        modal = tk.Toplevel(self.root, bg=WHITE)
         modal.title("Editar Artículo")
 
         # Config
@@ -259,28 +259,30 @@ class ArticulosTab(TabFrame):
         curr_row = 1
 
         for idx, field in enumerate(fields):
-            label = tk.Label(modal, text=field)
-            label.grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
+            customtkinter.CTkLabel(modal, text=field, fg_color="transparent",text_color="black",font=('_',14)).grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
+
             if field in ["Proveedor","Marca","Tipo"]:
                 var = tk.StringVar(modal)
                 var.set(articulo_data[idx])
                 options = self.get_field_options(field)
-                dropdown_menu = tk.OptionMenu(modal, var, *options)
-                dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+                # dropdown_menu = tk.OptionMenu(modal, var, *options)
+                dropdown_menu = customtkinter.CTkOptionMenu(modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
+                dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
                 fields_value.append(var)
             else:
-                entry = tk.Entry(modal, textvariable=tk.StringVar(value=articulo_data[idx]))
-                entry.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+                entry = customtkinter.CTkEntry(modal, textvariable=tk.StringVar(value=articulo_data[idx]), fg_color="white", text_color="black", font=("_",13.5))
+                entry.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
                 if field in self.NUMERIC_INPUTS:
-                    entry.config(validate="key", validatecommand=(self.root.validate_numeric_input, "%P"))
+                    entry.configure(validate="key", validatecommand=(self.root.validate_numeric_input, "%P"))
                 fields_value.append(entry)
             curr_row+=1
         
         ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
 
         # Botón para aceptar y cerrar el modal
-        ttk.Button(modal, text="Cancelar",command=lambda: modal.destroy()).grid(row=curr_row+1, column=1, padx=10, pady=10, sticky='e')
-        ttk.Button(modal, text="Guardar", command=lambda: self.update_articulo(articulo_id,fields_value, modal)).grid(row=curr_row+1, column=2, padx=10, pady=10,sticky='e')
+        customtkinter.CTkButton(modal, text="Cancelar", command=lambda: modal.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=curr_row+1, column=1, pady=10, sticky='e',padx=(0,10))
+
+        customtkinter.CTkButton(modal, text="Guardar", command=lambda: self.update_articulo(articulo_id,fields_value, modal), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=curr_row+1, column=2, pady=10, padx=(0,10), sticky='e')
 
 
     def update_articulo(self, id, fields, modal):
