@@ -53,8 +53,12 @@ class ArticulosTab(TabFrame):
         tk.Button(actions_frame, text="Seleccionar todo").grid(row=0,column=0,padx=10, pady=10)
         # tk.Button(actions_frame, text="Editar").grid(row=0,column=2,padx=10, pady=10)
         # self.delete_sel_button = tk.Button(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled")
-        self.delete_sel_button = customtkinter.CTkButton(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=RED, hover_color=RED_HOVER, border_spacing=8)
 
+        self.edit_button = customtkinter.CTkButton(actions_frame, text="Editar", command=self.open_edit_articulo_modal, state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=YELLOW, hover_color=YELLOW_HOVER, border_spacing=8, width=30)
+        self.edit_button.grid(row=0,column=2,padx=(0,20), pady=5)
+
+
+        self.delete_sel_button = customtkinter.CTkButton(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=RED, hover_color=RED_HOVER, border_spacing=8)
         self.delete_sel_button.grid(row=0,column=3,padx=10, pady=5)
 
         #Menu Opciones de registro
@@ -80,7 +84,7 @@ class ArticulosTab(TabFrame):
     
     def update_tree(self, filters={}):
         if hasattr(self, "tree") and self.tree:
-            del self.tree
+            self.tree.destroy()
 
         columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
         self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
@@ -91,7 +95,7 @@ class ArticulosTab(TabFrame):
         self.tree.grid(row=3,column=0, sticky='nsew',rowspan=1, padx=5, pady=5)
 
         #Habilita/Deshabilita boton de Eliminar Seleccion
-        self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_delete_sel_button())
+        self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
 
         #Deselecciona registros al hacer click en un espacio en blanco de la tabla
         self.tree.bind("<Button-1>", lambda event: self.remove_selection())
@@ -114,6 +118,7 @@ class ArticulosTab(TabFrame):
         else:
             self.frame.after(100, lambda: ErrorWindow(r.content,self.root))
         self.delete_sel_button.configure(state="disabled")
+        self.edit_button.configure(state="disabled")
         
 
     def open_row_menu(self, event):
@@ -133,9 +138,13 @@ class ArticulosTab(TabFrame):
         self.tree.selection_remove(self.tree.selection())
 
 
-    def update_delete_sel_button(self):
-        state = "normal" if self.tree.selection() else "disabled"
-        self.delete_sel_button.configure(state=state)
+    def update_action_buttons(self):
+        selection = self.tree.selection()
+        state_delete = "normal" if selection else "disabled"
+        state_edit = "normal" if len(selection)==1 else "disabled"
+        
+        self.delete_sel_button.configure(state=state_delete)
+        self.edit_button.configure(state=state_edit)
 
 
     def open_new_item_modal(self):
