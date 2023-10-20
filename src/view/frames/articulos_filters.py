@@ -35,14 +35,20 @@ class ArticulosFilter():
         self.filters_dic["descripcion"]=description.get()
 
 
-        # tk.Label(self.filter_frame, text="Precio", bg=parent.COLOR_BG).grid(row=3, column=4, sticky='w')
-        customtkinter.CTkLabel(self.filter_frame, text="Precio", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=3, column=4, sticky='w', padx=(25,5))
+        # #PRECIO
+        # customtkinter.CTkLabel(self.filter_frame, text="Precio", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=3, column=4, sticky='w', padx=(25,5))
 
-        range_slider = CTkRangeSlider(self.filter_frame, command=self.update_price_range)
-        range_slider.grid(row = 3,column=5, padx = 10, pady = 5,sticky='w')
+        # range_slider = CTkRangeSlider(self.filter_frame, command=self.update_price_range)
+        # range_slider.grid(row = 3,column=5, padx = 10, pady = 5,sticky='w')
         
-        self.price_filter = tk.Label(self.filter_frame, text="$0 - $1", bg=WHITE)
-        self.price_filter.grid(row=3, column=6, sticky='w')
+        # self.price_filter = tk.Label(self.filter_frame, text="$0 - $1", bg=WHITE)
+        # self.price_filter.grid(row=3, column=6, sticky='w')
+
+        customtkinter.CTkLabel(self.filter_frame, text="Codigo", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=3, column=4, sticky='w', padx=(25,5))
+        code = customtkinter.CTkEntry(self.filter_frame, fg_color="white", text_color="black", width=220, font=(DEFAULT_FONT,13.5))
+        code.grid(row = 3,column=5, padx = 10, pady = 5,sticky='w',columnspan=3)
+        code.bind("<KeyRelease>", lambda event: self.changes_in_filters("codigo",code.get()))
+        self.filters_dic["codigo"]=code.get()
 
 
         # tk.Label(self.filter_frame, text="Proveedor", bg=parent.COLOR_BG).grid(row=4, column=0, sticky='w')
@@ -93,14 +99,14 @@ class ArticulosFilter():
         # type = tk.OptionMenu(self.filter_frame, var_type, *options_type, command=lambda event: self.changes_in_filters("id_tipo",self.menu_value_to_id(var_type.get(),self.parent.tipos)))
         # brand.config(width=20)
 
-        type = customtkinter.CTkOptionMenu(self.filter_frame, width=150,dynamic_resizing=False, values=options_type,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_type,command=lambda event: self.changes_in_filters("id_tipo",self.menu_value_to_id(var_type.get(),self.parent.tipos)))
+        type = customtkinter.CTkOptionMenu(self.filter_frame, width=220,dynamic_resizing=False, values=options_type,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_type,command=lambda event: self.changes_in_filters("id_tipo",self.menu_value_to_id(var_type.get(),self.parent.tipos)))
 
-        type.grid(row = 4,column = 5, padx = 10, pady = (7,15),sticky='ew',columnspan=2)
+        type.grid(row = 4,column = 5, padx = 10, pady = (7,15),sticky='ew')
         self.filters_dic["id_tipo"]=self.menu_value_to_id(var_type.get(),self.parent.tipos)
 
 
 
-        self.filter_entries = [description, var_supplier, var_brand, var_type]
+        self.filter_entries = [description, code, var_supplier, var_brand, var_type]
         self.default_filters = self.filters_dic.copy() #Diccionario con los filtros default
 
 
@@ -116,9 +122,11 @@ class ArticulosFilter():
         self.filters_dic = self.default_filters.copy()
 
         self.filter_entries[0].delete(0,"end")
-        self.filter_entries[1].set("Todos los proveedores")
-        self.filter_entries[2].set("Todas las marcas")
-        self.filter_entries[3].set("Todos los tipos")
+        self.filter_entries[1].delete(0,"end")
+        self.filter_entries[2].set("Todos los proveedores")
+        self.filter_entries[3].set("Todas las marcas")
+        self.filter_entries[4].set("Todos los tipos")
+
         
         self.parent.update_tree(self.filters_dic)
 

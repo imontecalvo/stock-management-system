@@ -106,6 +106,7 @@ class ArticulosTab(TabFrame):
         # Vincular el menú contextual para cerrar al clic izquierdo en cualquier parte del TreeView
         # self.tree.bind("<Button-1>", lambda event: self.row_menu.unpost())
         
+        print(f"filtros:{filters}")
         r = self.controller.get_articulos(filters)
         if r.ok:
             articulos = r.content
@@ -114,9 +115,11 @@ class ArticulosTab(TabFrame):
                 marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else self.MISSING_VALUE
                 tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
                 data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
+                
                 self.tree.insert('',"end",id=a.id, values=data)
         else:
             self.frame.after(100, lambda: ErrorWindow(r.content,self.root))
+        
         self.delete_sel_button.configure(state="disabled")
         self.edit_button.configure(state="disabled")
         
