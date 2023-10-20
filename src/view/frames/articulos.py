@@ -7,7 +7,7 @@ import customtkinter
 
 from .articulos_filters import ArticulosFilter
 from .error_window import ErrorWindow
-from ..colors import *
+from ..constants import *
 
 class ArticulosTab(TabFrame):
     def update_price_range(self, value):
@@ -28,18 +28,18 @@ class ArticulosTab(TabFrame):
         self.marcas = self.get_marcas()
         self.tipos = self.get_tipos()
         
-        headingLabel =  tk.Label(self.frame, text = 'Articulos', font='candara 25 bold',bg=HEADING_COLOR, foreground=WHITE  )
+        headingLabel =  tk.Label(self.frame, text = 'Articulos', font=HEADING_FONT,bg=HEADING_COLOR, foreground=WHITE  )
         headingLabel.grid(row = 0,column= 0,sticky="w",pady=10, padx=10)
         
         #New item section
         frame1 = tk.Frame(self.frame, bg=HEADING_COLOR)
         frame1.grid(row=1,column=0, sticky="nw")
 
-        new_item_button = customtkinter.CTkButton(frame1, text="Nuevo Artículo",command=self.open_new_item_modal, corner_radius=6, font=('arial',16))
+        new_item_button = customtkinter.CTkButton(frame1, text="Nuevo Artículo",command=self.open_new_item_modal, corner_radius=6, font=(DEFAULT_FONT,14))
         new_item_button.grid(row=0,column=0,padx=10, pady=10)
 
 
-        import_items_button = customtkinter.CTkButton(frame1, text="Importar desde Excel", corner_radius=6, font=('arial',16))
+        import_items_button = customtkinter.CTkButton(frame1, text="Importar desde Excel", corner_radius=6, font=(DEFAULT_FONT,14))
         import_items_button.grid(row=0,column=1,padx=10, pady=10)
 
 
@@ -53,7 +53,7 @@ class ArticulosTab(TabFrame):
         tk.Button(actions_frame, text="Seleccionar todo").grid(row=0,column=0,padx=10, pady=10)
         # tk.Button(actions_frame, text="Editar").grid(row=0,column=2,padx=10, pady=10)
         # self.delete_sel_button = tk.Button(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled")
-        self.delete_sel_button = customtkinter.CTkButton(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled", corner_radius=6, font=('arial',16), fg_color=RED, hover_color=RED_HOVER, border_spacing=8)
+        self.delete_sel_button = customtkinter.CTkButton(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=RED, hover_color=RED_HOVER, border_spacing=8)
 
         self.delete_sel_button.grid(row=0,column=3,padx=10, pady=5)
 
@@ -140,7 +140,7 @@ class ArticulosTab(TabFrame):
 
     def open_new_item_modal(self):
         # Crear una ventana modal personalizada
-        modal = tk.Toplevel(self.root)
+        modal = tk.Toplevel(self.root, bg=WHITE)
         modal.title("Nuevo Artículo")
 
         # Config
@@ -162,28 +162,35 @@ class ArticulosTab(TabFrame):
         curr_row = 1
 
         for idx, field in enumerate(fields):
-            label = tk.Label(modal, text=field)
-            label.grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
+            customtkinter.CTkLabel(modal, text=field, fg_color="transparent",text_color="black",font=('_',14)).grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
+
             if field in ["Proveedor","Marca","Tipo"]:
                 var = tk.StringVar(modal)
                 var.set(self.MISSING_VALUE)
                 options = self.get_field_options(field)
-                dropdown_menu = tk.OptionMenu(modal, var, *options)
+                # dropdown_menu = tk.OptionMenu(modal, var, *options)
+                dropdown_menu = customtkinter.CTkOptionMenu(modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
+
                 dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
                 fields_value.append(var)
             else:
-                entry = tk.Entry(modal)
-                entry.grid(row=curr_row,column=1, padx=10, pady=5, columnspan=2,sticky='ew')
+                entry = customtkinter.CTkEntry(modal, fg_color="white", text_color="black", font=("_",13.5))
+                entry.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
                 if field in self.NUMERIC_INPUTS:
-                    entry.config(validate="key", validatecommand=(self.root.validate_numeric_input, "%P"))
+                    entry.configure(validate="key", validatecommand=(self.root.validate_numeric_input, "%P"))
                 fields_value.append(entry)
             curr_row+=1
 
         ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
 
         # Botón para aceptar y cerrar el modal
-        ttk.Button(modal, text="Cancelar",command=lambda: modal.destroy()).grid(row=curr_row+1, column=1, padx=10, pady=10, sticky='e')
-        ttk.Button(modal, text="Añadir", command=lambda: self.add_articulo(fields_value, modal)).grid(row=curr_row+1, column=2, padx=10, pady=10,sticky='e')
+        # ttk.Button(modal, text="Cancelar",command=lambda: modal.destroy()).grid(row=curr_row+1, column=1, padx=10, pady=10, sticky='e')
+        # ttk.Button(modal, text="Añadir", command=lambda: self.add_articulo(fields_value, modal)).grid(row=curr_row+1, column=2, padx=10, pady=10,sticky='e')
+
+        customtkinter.CTkButton(modal, text="Cancelar", command=lambda: modal.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=curr_row+1, column=1, pady=10, sticky='e',padx=(0,10))
+
+        customtkinter.CTkButton(modal, text="Añadir", command=lambda: self.add_articulo(fields_value, modal), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=curr_row+1, column=2, pady=10, padx=(0,10), sticky='e')
+
 
     def add_articulo(self, fields, model):
         #TODO Reemplazar ids de proveedor, tipo y marca
