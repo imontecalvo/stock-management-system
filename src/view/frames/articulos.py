@@ -67,6 +67,7 @@ class ArticulosTab(TabFrame):
         self.row_menu.add_command(label="Eliminar", command=self.delete_articulos)
 
         # Creacion de Tabla
+        self.generate_tree()
         self.update_tree()
 
         # Deseleccionar elementos al hacer click fuera 
@@ -81,11 +82,7 @@ class ArticulosTab(TabFrame):
         self.frame.grid_rowconfigure(3, weight=1)
         self.frame.tkraise()
 
-    
-    def update_tree(self, filters={}):
-        if hasattr(self, "tree") and self.tree:
-            self.tree.destroy()
-
+    def generate_tree(self):
         columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
         self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
         for c in columns:
@@ -103,9 +100,32 @@ class ArticulosTab(TabFrame):
         # Vincular el menú contextual al TreeView y habilitar la selección al clic derecho
         self.tree.bind("<Button-3>", self.open_row_menu)
 
+
+    def update_tree(self, filters={}):
+        # if hasattr(self, "tree") and self.tree:
+        #     self.tree.destroy()
+
+        # columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
+        # self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
+        # for c in columns:
+        #     self.tree.heading(c,text=c)
+        #     if c == "Codigo":
+        #         self.tree.column(c, width=100)
+        # self.tree.grid(row=3,column=0, sticky='nsew',rowspan=1, padx=5, pady=5)
+
+        # #Habilita/Deshabilita boton de Eliminar Seleccion
+        # self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
+
+        # #Deselecciona registros al hacer click en un espacio en blanco de la tabla
+        # self.tree.bind("<Button-1>", lambda event: self.remove_selection())
+
+        # # Vincular el menú contextual al TreeView y habilitar la selección al clic derecho
+        # self.tree.bind("<Button-3>", self.open_row_menu)
+
         # Vincular el menú contextual para cerrar al clic izquierdo en cualquier parte del TreeView
         # self.tree.bind("<Button-1>", lambda event: self.row_menu.unpost())
         
+        self.tree.delete(*self.tree.get_children())
         r = self.controller.get_articulos(filters)
         if r.ok:
             articulos = r.content
