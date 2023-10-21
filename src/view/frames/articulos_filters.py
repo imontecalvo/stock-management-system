@@ -110,13 +110,15 @@ class ArticulosFilter():
         self.default_filters = self.filters_dic.copy() #Diccionario con los filtros default
 
 
-
     def update_price_range(self, value):
         self.price_filter.config(text=f"${value[0]} - ${value[1]}")
 
     def changes_in_filters(self, key, new_value):
         self.filters_dic[key]=new_value
-        self.parent.update_tree(self.filters_dic.copy())
+        if key in ["codigo","descripcion"]: #Si es entry optimizo para ahorrar queries
+            on_key_release(self)
+        else:
+            self.parent.update_tree(self.filters_dic.copy())
 
     def clear_filters(self):
         self.filters_dic = self.default_filters.copy()
@@ -127,8 +129,8 @@ class ArticulosFilter():
         self.filter_entries[3].set("Todas las marcas")
         self.filter_entries[4].set("Todos los tipos")
 
-        
         self.parent.update_tree(self.filters_dic)
+
 
     def menu_value_to_id(self,value, dict):
         if value in ["Todos los proveedores","Todas las marcas","Todos los tipos"]:
@@ -138,5 +140,7 @@ class ArticulosFilter():
         return self.parent.get_id_from_value(dict,value)
 
 
-
-        
+def on_key_release(articulos_filter):
+        if hasattr(on_key_release, "timer"):
+            articulos_filter.filter_frame.after_cancel(on_key_release.timer)
+        on_key_release.timer = articulos_filter.filter_frame.after(250, lambda: articulos_filter.parent.update_tree(articulos_filter.filters_dic.copy()))
