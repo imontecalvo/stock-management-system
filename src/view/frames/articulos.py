@@ -106,7 +106,6 @@ class ArticulosTab(TabFrame):
         # Vincular el menú contextual para cerrar al clic izquierdo en cualquier parte del TreeView
         # self.tree.bind("<Button-1>", lambda event: self.row_menu.unpost())
         
-        print(f"filtros:{filters}")
         r = self.controller.get_articulos(filters)
         if r.ok:
             articulos = r.content
@@ -185,6 +184,8 @@ class ArticulosTab(TabFrame):
 
                 dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
                 fields_value.append(var)
+
+                customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
             else:
                 entry = customtkinter.CTkEntry(modal, fg_color="white", text_color="black", font=("_",13.5))
                 entry.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
@@ -281,6 +282,8 @@ class ArticulosTab(TabFrame):
                 dropdown_menu = customtkinter.CTkOptionMenu(modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
                 dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
                 fields_value.append(var)
+                customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
+
             else:
                 entry = customtkinter.CTkEntry(modal, textvariable=tk.StringVar(value=articulo_data[idx]), fg_color="white", text_color="black", font=("_",13.5))
                 entry.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')

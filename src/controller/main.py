@@ -15,7 +15,7 @@ class Controller():
             if not k in filter_by or filters[k] == "":
                 useless_keys.append(k)
 
-            elif k in filter_by[1:]:#Si es un campo numerico lo casteo a int
+            elif k in filter_by[2:]:#Si es un campo numerico lo casteo a int
                 if filters[k]: #Puede ser None -> NULL en la tabla
                     filters[k]=int(filters[k])
 
