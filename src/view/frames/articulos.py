@@ -16,22 +16,25 @@ class ArticulosTab(TabFrame):
     def __init__(self, root, controller):
         super().__init__(root, controller)
 
-        
+        #Constantes
         self.MISSING_VALUE = "Sin especificar"
         self.NUMERIC_INPUTS = ["Stock","Precio de lista", "Punto de reposicion"]
 
+        #Configuracion de frame
         self.frame.config(bg=HEADING_COLOR)
         self.frame.grid(row=0, column=0, sticky="nsew")
         self.frame.columnconfigure(0, weight=1)
 
+        #(ID:Nombre) de Proveedores, marcas y tipos cargados en memoria
         self.proveedores = self.get_proveedores()
         self.marcas = self.get_marcas()
         self.tipos = self.get_tipos()
         
+        #Titulo seccion
         headingLabel =  tk.Label(self.frame, text = 'Articulos', font=HEADING_FONT,bg=HEADING_COLOR, foreground=WHITE  )
         headingLabel.grid(row = 0,column= 0,sticky="w",pady=10, padx=10)
         
-        #New item section
+        #New item seccion
         frame1 = tk.Frame(self.frame, bg=HEADING_COLOR)
         frame1.grid(row=1,column=0, sticky="nw")
 
@@ -43,7 +46,7 @@ class ArticulosTab(TabFrame):
         import_items_button.grid(row=0,column=1,padx=10, pady=10)
 
 
-        #Filter section
+        #Filter seccion
         filters = ArticulosFilter(self)
 
         # Table Actions
@@ -51,8 +54,6 @@ class ArticulosTab(TabFrame):
         actions_frame.grid(row=4,column=0,sticky="ew")
         actions_frame.columnconfigure(1, weight=1)
         tk.Button(actions_frame, text="Seleccionar todo").grid(row=0,column=0,padx=10, pady=10)
-        # tk.Button(actions_frame, text="Editar").grid(row=0,column=2,padx=10, pady=10)
-        # self.delete_sel_button = tk.Button(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled")
 
         self.edit_button = customtkinter.CTkButton(actions_frame, text="Editar", command=self.open_edit_articulo_modal, state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=YELLOW, hover_color=YELLOW_HOVER, border_spacing=8, width=30)
         self.edit_button.grid(row=0,column=2,padx=(0,20), pady=5)
@@ -77,11 +78,13 @@ class ArticulosTab(TabFrame):
         actions_frame.bind("<Button-1>", lambda event: self.remove_selection())
     
 
+    #Pone al frente el frame de Articulos y setea configuraciones de filas
     def show(self):
         self.root.grid_rowconfigure(0, weight=1)
         self.frame.grid_rowconfigure(3, weight=1)
         self.frame.tkraise()
 
+    #Genera tree view
     def generate_tree(self):
         columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
         self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
@@ -101,30 +104,8 @@ class ArticulosTab(TabFrame):
         self.tree.bind("<Button-3>", self.open_row_menu)
 
 
+    #Recibe un diccionario de filtros y actualiza tree view con articulos filtrados
     def update_tree(self, filters={}):
-        # if hasattr(self, "tree") and self.tree:
-        #     self.tree.destroy()
-
-        # columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
-        # self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
-        # for c in columns:
-        #     self.tree.heading(c,text=c)
-        #     if c == "Codigo":
-        #         self.tree.column(c, width=100)
-        # self.tree.grid(row=3,column=0, sticky='nsew',rowspan=1, padx=5, pady=5)
-
-        # #Habilita/Deshabilita boton de Eliminar Seleccion
-        # self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
-
-        # #Deselecciona registros al hacer click en un espacio en blanco de la tabla
-        # self.tree.bind("<Button-1>", lambda event: self.remove_selection())
-
-        # # Vincular el menú contextual al TreeView y habilitar la selección al clic derecho
-        # self.tree.bind("<Button-3>", self.open_row_menu)
-
-        # Vincular el menú contextual para cerrar al clic izquierdo en cualquier parte del TreeView
-        # self.tree.bind("<Button-1>", lambda event: self.row_menu.unpost())
-        
         self.tree.delete(*self.tree.get_children())
         r = self.controller.get_articulos(filters)
         if r.ok:
@@ -142,7 +123,7 @@ class ArticulosTab(TabFrame):
         self.delete_sel_button.configure(state="disabled")
         self.edit_button.configure(state="disabled")
         
-
+    #Abre menu al hacer click derecho sobre un articulo en tree view
     def open_row_menu(self, event):
         # Obtener la fila seleccionada
         item = self.tree.identify_row(event.y)
@@ -159,7 +140,9 @@ class ArticulosTab(TabFrame):
         self.row_menu.unpost()
         self.tree.selection_remove(self.tree.selection())
 
-
+    #Setea estados de botones: "Editar" y "Eliminar seleccion"
+    #   - Editar: habilitado si hay 1 item seleccionado, sino deshabilitado
+    #   - Eliminar seleccion: habilitado si hay al menos 1 item seleccionado, sino deshabilitado
     def update_action_buttons(self):
         selection = self.tree.selection()
         state_delete = "normal" if selection else "disabled"
@@ -169,6 +152,7 @@ class ArticulosTab(TabFrame):
         self.edit_button.configure(state=state_edit)
 
 
+    #Abre modal para agregar nuevo articulo
     def open_new_item_modal(self):
         # Crear una ventana modal personalizada
         modal = tk.Toplevel(self.root, bg=WHITE)
@@ -199,7 +183,6 @@ class ArticulosTab(TabFrame):
                 var = tk.StringVar(modal)
                 var.set(self.MISSING_VALUE)
                 options = self.get_field_options(field)
-                # dropdown_menu = tk.OptionMenu(modal, var, *options)
                 dropdown_menu = customtkinter.CTkOptionMenu(modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
 
                 dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
@@ -216,17 +199,13 @@ class ArticulosTab(TabFrame):
 
         ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
 
-        # Botón para aceptar y cerrar el modal
-        # ttk.Button(modal, text="Cancelar",command=lambda: modal.destroy()).grid(row=curr_row+1, column=1, padx=10, pady=10, sticky='e')
-        # ttk.Button(modal, text="Añadir", command=lambda: self.add_articulo(fields_value, modal)).grid(row=curr_row+1, column=2, padx=10, pady=10,sticky='e')
-
         customtkinter.CTkButton(modal, text="Cancelar", command=lambda: modal.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=curr_row+1, column=1, pady=10, sticky='e',padx=(0,10))
-
         customtkinter.CTkButton(modal, text="Añadir", command=lambda: self.add_articulo(fields_value, modal), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=curr_row+1, column=2, pady=10, padx=(0,10), sticky='e')
 
 
-    def add_articulo(self, fields, model):
-        #TODO Reemplazar ids de proveedor, tipo y marca
+    #Recibe un diccionario con los valores de un articulo a agregar y lo añade a la base de datos
+    #En caso de error, se muestra el mensaje en un pop up
+    def add_articulo(self, fields):
         #TODO Chequear tipos de datos y Nulls
 
         id_proveedor = None if fields[2].get()==self.MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2].get())
@@ -256,6 +235,7 @@ class ArticulosTab(TabFrame):
         else:
             ErrorWindow(r.content, self.frame)
 
+    #Elimina los articulos seleccionados en el treeview
     def delete_articulos(self):
         #TODO Mostrar advertencia y consultar confirmacion de borrado
         id_articulos = tuple(int(x) for x in self.tree.selection())
@@ -265,6 +245,7 @@ class ArticulosTab(TabFrame):
         else:
             ErrorWindow(r.content, self.root)
 
+    #Abre modal para editar un articulo ya existente
     def open_edit_articulo_modal(self):
         articulo_id = self.tree.selection()[0]
         articulo_data = self.tree.item(articulo_id,"values")
@@ -298,7 +279,6 @@ class ArticulosTab(TabFrame):
                 var = tk.StringVar(modal)
                 var.set(articulo_data[idx])
                 options = self.get_field_options(field)
-                # dropdown_menu = tk.OptionMenu(modal, var, *options)
                 dropdown_menu = customtkinter.CTkOptionMenu(modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
                 dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
                 fields_value.append(var)
@@ -320,8 +300,9 @@ class ArticulosTab(TabFrame):
         customtkinter.CTkButton(modal, text="Guardar", command=lambda: self.update_articulo(articulo_id,fields_value, modal), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=curr_row+1, column=2, pady=10, padx=(0,10), sticky='e')
 
 
+    #Recibe id y campos del articulo a editar y lo edita en la base de datos, luego cierra modal
+    #En caso de error, muestra el mensaje en un pop up
     def update_articulo(self, id, fields, modal):
-        #TODO Reemplazar ids de proveedor, tipo y marca
         #TODO Chequear tipos de datos y Nulls
         id_proveedor = None if fields[2].get()==self.MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2].get())
         id_marca = None if fields[3].get()==self.MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3].get())
@@ -339,13 +320,14 @@ class ArticulosTab(TabFrame):
             "pto_reposicion":int(fields[7].get())
         }
 
-        r = self.controller.update_articulo(values) #TODO Chequear respuesta del controller y avisar si fallo
+        r = self.controller.update_articulo(values)
         if r.ok:
             self.update_tree()
         else:
             ErrorWindow(r.content, self.root)    
         modal.destroy()
 
+    #Obtiene la lista de proveedores de la base de datos
     def get_proveedores(self):
         proveedores_dic = {}
         
@@ -358,6 +340,7 @@ class ArticulosTab(TabFrame):
             self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
         return proveedores_dic
     
+    #Obtiene la lista de marcas de la base de datos
     def get_marcas(self):
         marcas_dic = {}
         r = self.controller.get_marcas()
@@ -369,6 +352,7 @@ class ArticulosTab(TabFrame):
             self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
         return marcas_dic
     
+    #Obtiene la lista de tipos de la base de datos
     def get_tipos(self):
         tipos_dic = {}
         r = self.controller.get_tipos()
@@ -380,6 +364,8 @@ class ArticulosTab(TabFrame):
             self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
         return tipos_dic
     
+    #Devuelve la lista de opciones de proveedores, marca o tipo para los dropdown menus
+    #Concatena el valor "Sin especificar" a la lista de valores extraida de la base de datos
     def get_field_options(self, field):
             if field == "Proveedor":
                 return [self.MISSING_VALUE]+list(self.proveedores.values())
@@ -389,6 +375,8 @@ class ArticulosTab(TabFrame):
                 return [self.MISSING_VALUE]+list(self.tipos.values())
             return ["error"]
     
+    #Dado un diccionario y un valor, obtiene la clave
+    #Lo usamos en dropdown menus para obtener el ID a partir del nombre de Proveedores, marcas o tipos
     def get_id_from_value(self, dict, value):
         for k,v in dict.items():
             if v==value:
