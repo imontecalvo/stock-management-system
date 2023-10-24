@@ -84,24 +84,52 @@ class ArticulosTab(TabFrame):
         self.frame.grid_rowconfigure(3, weight=1)
         self.frame.tkraise()
 
+    def set_separator_col(self, columns, force=False):
+        if self.update_sep or force:
+            total_width = 0
+            for i,c in enumerate(columns):
+                w=self.tree.column(c,option="width")
+                total_width+=w
+                self.tree.separators[i].grid(row=1, column=0, ipady=300, pady=1, sticky='w', padx=(total_width,0))
+
     #Genera tree view
     def generate_tree(self):
         columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
         self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
-        for c in columns:
+        self.tree.columns=columns
+        self.tree.separators=[]
+        self.update_sep = False
+
+        for i, c in enumerate(columns):
+            self.tree.grid_columnconfigure(i, weight=1)
             self.tree.heading(c,text=c)
             if c == "Codigo":
                 self.tree.column(c, width=100)
+
+            s = ttk.Separator(master=self.tree, orient='vertical', style='black.TSeparator', takefocus= 0)
+            self.tree.separators.append(s)
+
         self.tree.grid(row=3,column=0, sticky='nsew',rowspan=1, padx=5, pady=5)
+        self.set_separator_col(columns,True)
 
         #Habilita/Deshabilita boton de Eliminar Seleccion
         self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
 
         #Deselecciona registros al hacer click en un espacio en blanco de la tabla
-        self.tree.bind("<Button-1>", lambda event: self.remove_selection())
+        self.tree.bind("<Button-1>", lambda event: self.click_l_event())
 
         # Vincular el menú contextual al TreeView y habilitar la selección al clic derecho
         self.tree.bind("<Button-3>", self.open_row_menu)
+
+        self.tree.bind("<ButtonRelease-1>", lambda event: self.update_separators())
+        self.tree.bind("<Motion>", lambda event: self.set_separator_col(columns))
+
+        style = ttk.Style()
+        style.configure("Treeview.Heading", background='light yellow')#--> color headings
+        self.tree.tag_configure('colour', background=LIGHT_GRAY2)
+
+        self.tree.after(300, lambda: self.set_separator_col(columns,True))
+
 
 
     #Recibe un diccionario de filtros y actualiza tree view con articulos filtrados
@@ -110,13 +138,16 @@ class ArticulosTab(TabFrame):
         r = self.controller.get_articulos(filters)
         if r.ok:
             articulos = r.content
-            for a in articulos:
+            for idx,a in enumerate(articulos):
                 proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else self.MISSING_VALUE
                 marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else self.MISSING_VALUE
                 tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
                 data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
                 
-                self.tree.insert('',"end",id=a.id, values=data)
+                if not idx%2:
+                    self.tree.insert('',"end",id=a.id, values=data)
+                else:
+                    self.tree.insert('',"end",id=a.id, values=data, tags=("colour"))
         else:
             self.frame.after(100, lambda: ErrorWindow(r.content,self.root))
         
@@ -134,6 +165,13 @@ class ArticulosTab(TabFrame):
             # Mostrar el menú contextual en las coordenadas del evento
             self.row_menu.post(event.x_root, event.y_root)
 
+    def update_separators(self):
+        self.update_sep = False
+        self.set_separator_col(self.tree.columns, True)
+
+    def click_l_event(self):
+        self.update_sep = True
+        self.remove_selection()
 
     #Elimina seleccion y cierra menu en caso de estar abierto cuando se hace click en un la tabla
     def remove_selection(self):
