@@ -68,6 +68,7 @@ class ArticulosTab(TabFrame):
         self.row_menu = tk.Menu(root, tearoff=0)
         self.row_menu.add_command(label="Editar", command=self.open_edit_articulo_modal)
         self.row_menu.add_command(label="Eliminar", command=ask_confirmation)
+        self.row_menu.config(bg =WHITE,fg='black',activebackground=BLUE,activeforeground='white')
 
         # Creacion de Tabla
         self.generate_tree()

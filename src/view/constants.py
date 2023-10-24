@@ -6,6 +6,7 @@ WHITE = "#f5f7fa"
 LIGHT_GRAY = "#d6d6d6"
 LIGHT_GRAY2 = "#e1e4eb"
 YELLOW = "#de910b"
+BLUE = "#1f6aa5"
 
 RED_HOVER = "#9e0d3d"
 YELLOW_HOVER = "#ad7007"
