@@ -90,7 +90,7 @@ class ArticulosTab(TabFrame):
             for i,c in enumerate(columns):
                 w=self.tree.column(c,option="width")
                 total_width+=w
-                self.tree.separators[i].grid(row=1, column=0, ipady=300, pady=1, sticky='w', padx=(total_width,0))
+                self.tree.separators[i].grid(row=1, column=0, ipady=300, pady=20, sticky='w', padx=(total_width,0))
 
     #Genera tree view
     def generate_tree(self):
