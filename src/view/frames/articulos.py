@@ -7,6 +7,7 @@ import customtkinter
 
 from .articulos_filters import ArticulosFilter
 from .error_window import ErrorWindow
+from .confirm_window import ConfirmWindow
 from ..constants import *
 
 class ArticulosTab(TabFrame):
@@ -58,14 +59,15 @@ class ArticulosTab(TabFrame):
         self.edit_button = customtkinter.CTkButton(actions_frame, text="Editar", command=self.open_edit_articulo_modal, state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=YELLOW, hover_color=YELLOW_HOVER, border_spacing=8, width=30)
         self.edit_button.grid(row=0,column=2,padx=(0,20), pady=5)
 
-
-        self.delete_sel_button = customtkinter.CTkButton(actions_frame, text="Eliminar selección", command=self.delete_articulos,state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=RED, hover_color=RED_HOVER, border_spacing=8)
+        ask_confirmation = lambda: ConfirmWindow(self.frame, "¿Desea eliminar el/los artículo/s seleccionados?","Eliminar artículo",self.delete_articulos)
+        
+        self.delete_sel_button = customtkinter.CTkButton(actions_frame, text="Eliminar selección", command= ask_confirmation,state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=RED, hover_color=RED_HOVER, border_spacing=8)
         self.delete_sel_button.grid(row=0,column=3,padx=10, pady=5)
 
         #Menu Opciones de registro
         self.row_menu = tk.Menu(root, tearoff=0)
         self.row_menu.add_command(label="Editar", command=self.open_edit_articulo_modal)
-        self.row_menu.add_command(label="Eliminar", command=self.delete_articulos)
+        self.row_menu.add_command(label="Eliminar", command=ask_confirmation)
 
         # Creacion de Tabla
         self.generate_tree()
@@ -238,7 +240,7 @@ class ArticulosTab(TabFrame):
         ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
 
         customtkinter.CTkButton(modal, text="Cancelar", command=lambda: modal.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=curr_row+1, column=1, pady=10, sticky='e',padx=(0,10))
-        customtkinter.CTkButton(modal, text="Añadir", command=lambda: self.add_articulo(fields_value, modal), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=curr_row+1, column=2, pady=10, padx=(0,10), sticky='e')
+        customtkinter.CTkButton(modal, text="Añadir", command=lambda: self.add_articulo(fields_value), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=curr_row+1, column=2, pady=10, padx=(0,10), sticky='e')
 
 
     #Recibe un diccionario con los valores de un articulo a agregar y lo añade a la base de datos
