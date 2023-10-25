@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
-from .tab_frame import TabFrame
+from ..tab_frame import TabFrame
 
 from view.CTkRangeSlider import *
 import customtkinter
-from ..constants import *
+from ...constants import *
 
 class ArticulosFilter():
     def __init__(self, parent):

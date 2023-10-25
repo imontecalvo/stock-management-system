@@ -42,3 +42,6 @@ class Controller():
     
     def get_tipos(self):
         return self.model.get_tipos()
+    
+    def add_proveedor(self, name):
+        return self.model.add_proveedor(name)

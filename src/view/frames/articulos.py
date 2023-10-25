@@ -5,9 +5,10 @@ from .tab_frame import TabFrame
 from view.CTkRangeSlider import *
 import customtkinter
 
-from .articulos_filters import ArticulosFilter
-from .error_window import ErrorWindow
-from .confirm_window import ConfirmWindow
+from .components.articulos_filters import ArticulosFilter
+from .components.error_window import ErrorWindow
+from .components.confirm_window import ConfirmWindow
+from .components.input_window import InputWindow
 from ..constants import *
 
 class ArticulosTab(TabFrame):
@@ -229,7 +230,9 @@ class ArticulosTab(TabFrame):
                 dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
                 fields_value.append(var)
 
-                customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
+                # Boton para añadir prov, marca o tipo
+                command=self.get_add_method(field)
+                customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", f"Añadir {fields[idx]}", command) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
             else:
                 entry = customtkinter.CTkEntry(modal, fg_color="white", text_color="black", font=("_",13.5))
                 entry.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
@@ -242,6 +245,7 @@ class ArticulosTab(TabFrame):
 
         customtkinter.CTkButton(modal, text="Cancelar", command=lambda: modal.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=curr_row+1, column=1, pady=10, sticky='e',padx=(0,10))
         customtkinter.CTkButton(modal, text="Añadir", command=lambda: self.add_articulo(fields_value), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=curr_row+1, column=2, pady=10, padx=(0,10), sticky='e')
+
 
 
     #Recibe un diccionario con los valores de un articulo a agregar y lo añade a la base de datos
@@ -422,6 +426,29 @@ class ArticulosTab(TabFrame):
         for k,v in dict.items():
             if v==value:
                 return k
+
+    def get_add_method(self, field):
+        if field=="Proveedor":
+            return self.add_proveedor
+        # elif field=="Marca":
+        #     return self.add_marca
+        # return self.add_tipo
+        return None
+    
+    def add_proveedor(self, name):
+        if len(name)==0:
+            #TODO manejar error
+            return False
+        
+        r = self.controller.add_proveedor(name)
+        if r["ok"]:
+            # id=r["content"]["id"]
+            # name=r["content"]["name"]
+            # self.proveedores[id]=name
+            return True
+        return False
+        
+
 
 """
 root
