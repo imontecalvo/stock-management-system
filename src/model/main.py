@@ -158,10 +158,8 @@ class Model():
         try:
             session = self.Session()
             new_proveedor = Proveedor(name)
-            x = session.add(new_proveedor)
-            y = session.commit()
-            print(x)
-            print(y)
-            return Response(True)
+            session.add(new_proveedor)
+            session.commit()
+            return Response(True,{"name": new_proveedor.nombre, "id": new_proveedor.id})
         except:
             return Response(False, "ERROR: No se pudo añadir el proveedor.")

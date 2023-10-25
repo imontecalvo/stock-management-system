@@ -232,7 +232,12 @@ class ArticulosTab(TabFrame):
 
                 # Boton para añadir prov, marca o tipo
                 command=self.get_add_method(field)
-                customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", f"Añadir {fields[idx]}", command) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
+                if field=="Proveedor":
+                    customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", "Añadir proveedor", self.add_proveedor) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
+                elif field == "Marca":
+                    customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", "Añadir marca", self.add_marca) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
+                else:
+                    customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", "Añadir tipo", self.add_tipo) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
             else:
                 entry = customtkinter.CTkEntry(modal, fg_color="white", text_color="black", font=("_",13.5))
                 entry.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
@@ -436,6 +441,32 @@ class ArticulosTab(TabFrame):
         return None
     
     def add_proveedor(self, name):
+        if len(name)==0:
+            #TODO manejar error
+            return False
+        
+        r = self.controller.add_proveedor(name)
+        if r.ok:
+            id=r.content["id"]
+            name=r.content["name"]
+            self.proveedores[id]=name
+            return True
+        return False
+    
+    def add_marca(self, name):
+        if len(name)==0:
+            #TODO manejar error
+            return False
+        
+        r = self.controller.add_proveedor(name)
+        if r["ok"]:
+            # id=r["content"]["id"]
+            # name=r["content"]["name"]
+            # self.proveedores[id]=name
+            return True
+        return False
+    
+    def add_tipo(self, name):
         if len(name)==0:
             #TODO manejar error
             return False

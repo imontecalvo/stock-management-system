@@ -30,7 +30,7 @@ class InputWindow():
 
         customtkinter.CTkButton(button_frame, text="Cancelar", command=lambda: self.window.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=1, column=0, pady=10, sticky='e',padx=(0,10))
 
-        customtkinter.CTkButton(button_frame, text="Añadir", command=lambda: self.confirm_action(input, command), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=1, column=1, pady=10, padx=(0,10), sticky='w')
+        customtkinter.CTkButton(button_frame, text="Añadir", command=lambda: self.confirm_action(input.get(), command), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=1, column=1, pady=10, padx=(0,10), sticky='w')
 
     def confirm_action(self, input, command):
         command(input)
