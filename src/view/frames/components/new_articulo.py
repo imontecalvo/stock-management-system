@@ -71,7 +71,6 @@ class NewArticulo():
         var = tk.StringVar(self.modal)
         var.set(MISSING_VALUE)
         options = self.get_field_options(label)
-        print(options)
         dropdown_menu = customtkinter.CTkOptionMenu(self.modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
 
         # inputwin_command=lambda: InputWindow(self.modal, label, title, command)
