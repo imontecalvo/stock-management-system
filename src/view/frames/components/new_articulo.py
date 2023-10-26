@@ -71,6 +71,7 @@ class NewArticulo():
         var = tk.StringVar(self.modal)
         var.set(MISSING_VALUE)
         options = self.get_field_options(label)
+        print(options)
         dropdown_menu = customtkinter.CTkOptionMenu(self.modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
 
         # inputwin_command=lambda: InputWindow(self.modal, label, title, command)
@@ -94,7 +95,6 @@ class NewArticulo():
 
     def update_options(self, field, input):
         options = self.get_field_options(field)
-        options.append(input)
 
         if field=="Proveedor":
             self.supplier.configure(values=options)
@@ -103,5 +103,4 @@ class NewArticulo():
         else:
             self.type.configure(values=options)
 
-        #self.parent.update_filter_options()
             

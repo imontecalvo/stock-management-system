@@ -38,8 +38,8 @@ class InputWindow():
     def confirm_action(self, input, command):
         r = command(input)
         field = self.title.split(" ")[-1]
-        if r:
+        if r.ok:
             self.parent.update_options(field, input)
             self.window.destroy()
         else:
-            self.error_label.configure(text=f"ERROR: {field} ya existente.")
+            self.error_label.configure(text=r.content)

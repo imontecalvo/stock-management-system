@@ -11,6 +11,7 @@ from .components.confirm_window import ConfirmWindow
 from .components.input_window import InputWindow
 from .components.new_articulo import NewArticulo
 from ..constants import *
+from utils.response import Response
 
 class ArticulosTab(TabFrame):
     def update_price_range(self, value):
@@ -383,8 +384,7 @@ class ArticulosTab(TabFrame):
     
     def add_proveedor(self, name):
         if len(name)==0:
-            #TODO manejar error
-            return False
+            return Response(False, "ERROR: Ingrese un proveedor.")
         
         r = self.controller.add_proveedor(name)
         if r.ok:
@@ -394,8 +394,9 @@ class ArticulosTab(TabFrame):
             #actualizar proveedores en dropdowns 
             # options = self.get_field_options("Proveedor")
             # self.dropdowns[0].configure(values=options) #menu nuevo articulo
-            return True
-        return False
+            return Response(True)
+        return Response(False, "ERROR: Proveedor ya existente.")
+        
     
     def add_marca(self, name):
         if len(name)==0:
