@@ -9,6 +9,7 @@ from .components.articulos_filters import ArticulosFilter
 from .components.error_window import ErrorWindow
 from .components.confirm_window import ConfirmWindow
 from .components.input_window import InputWindow
+from .components.new_articulo import NewArticulo
 from ..constants import *
 
 class ArticulosTab(TabFrame):
@@ -196,60 +197,64 @@ class ArticulosTab(TabFrame):
 
     #Abre modal para agregar nuevo articulo
     def open_new_item_modal(self):
-        # Crear una ventana modal personalizada
-        modal = tk.Toplevel(self.root, bg=WHITE)
-        modal.title("Nuevo Artículo")
+        NewArticulo(self)
+        # # Crear una ventana modal personalizada
+        # modal = tk.Toplevel(self.root, bg=WHITE)
+        # modal.title("Nuevo Artículo")
 
-        # Config
-        ventana_principal_ancho = self.root.winfo_width()
-        ventana_principal_alto = self.root.winfo_height()
+        # # Config
+        # ventana_principal_ancho = self.root.winfo_width()
+        # ventana_principal_alto = self.root.winfo_height()
 
-        modal_ancho = 300
-        modal_alto = 200
+        # modal_ancho = 300
+        # modal_alto = 200
 
-        x = (ventana_principal_ancho//2) - (modal_ancho//2)
-        y = (ventana_principal_alto//2)-(modal_alto//2)
+        # x = (ventana_principal_ancho//2) - (modal_ancho//2)
+        # y = (ventana_principal_alto//2)-(modal_alto//2)
 
-        modal.geometry(f"+{x}+{y}")
+        # modal.geometry(f"+{x}+{y}")
 
-        # Contenido
-        ttk.Frame(modal).grid(row=0, column=0, pady=5)
-        fields = ["Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion"] #TODO Pedir campos al modelo
-        fields_value = []
-        curr_row = 1
+        # # Contenido
+        # ttk.Frame(modal).grid(row=0, column=0, pady=5)
+        # fields = ["Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion"] #TODO Pedir campos al modelo
+        # fields_value = []
+        # curr_row = 1
 
-        for idx, field in enumerate(fields):
-            customtkinter.CTkLabel(modal, text=field, fg_color="transparent",text_color="black",font=('_',14)).grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
+        # self.dropdowns = []
 
-            if field in ["Proveedor","Marca","Tipo"]:
-                var = tk.StringVar(modal)
-                var.set(self.MISSING_VALUE)
-                options = self.get_field_options(field)
-                dropdown_menu = customtkinter.CTkOptionMenu(modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
+        # for idx, field in enumerate(fields):
+        #     customtkinter.CTkLabel(modal, text=field, fg_color="transparent",text_color="black",font=('_',14)).grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
 
-                dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
-                fields_value.append(var)
+        #     if field in ["Proveedor","Marca","Tipo"]:
+        #         var = tk.StringVar(modal)
+        #         var.set(self.MISSING_VALUE)
+        #         options = self.get_field_options(field)
+        #         dropdown_menu = customtkinter.CTkOptionMenu(modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
 
-                # Boton para añadir prov, marca o tipo
-                command=self.get_add_method(field)
-                if field=="Proveedor":
-                    customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", "Añadir proveedor", self.add_proveedor) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
-                elif field == "Marca":
-                    customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", "Añadir marca", self.add_marca) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
-                else:
-                    customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", "Añadir tipo", self.add_tipo) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
-            else:
-                entry = customtkinter.CTkEntry(modal, fg_color="white", text_color="black", font=("_",13.5))
-                entry.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
-                if field in self.NUMERIC_INPUTS:
-                    entry.configure(validate="key", validatecommand=(self.root.validate_numeric_input, "%P"))
-                fields_value.append(entry)
-            curr_row+=1
+        #         dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
+        #         self.dropdowns.append(dropdown_menu)
+        #         fields_value.append(var)
 
-        ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
+        #         # Boton para añadir prov, marca o tipo
+        #         command=self.get_add_method(field)
+        #         if field=="Proveedor":
+        #             customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", "Añadir proveedor", self.add_proveedor) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
+        #         elif field == "Marca":
+        #             customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", "Añadir marca", self.add_marca) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
+        #         else:
+        #             customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command= lambda: InputWindow(self.frame, "Nombre", "Añadir tipo", self.add_tipo) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
+        #     else:
+        #         entry = customtkinter.CTkEntry(modal, fg_color="white", text_color="black", font=("_",13.5))
+        #         entry.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
+        #         if field in self.NUMERIC_INPUTS:
+        #             entry.configure(validate="key", validatecommand=(self.root.validate_numeric_input, "%P"))
+        #         fields_value.append(entry)
+        #     curr_row+=1
 
-        customtkinter.CTkButton(modal, text="Cancelar", command=lambda: modal.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=curr_row+1, column=1, pady=10, sticky='e',padx=(0,10))
-        customtkinter.CTkButton(modal, text="Añadir", command=lambda: self.add_articulo(fields_value), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=curr_row+1, column=2, pady=10, padx=(0,10), sticky='e')
+        # ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
+
+        # customtkinter.CTkButton(modal, text="Cancelar", command=lambda: modal.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=curr_row+1, column=1, pady=10, sticky='e',padx=(0,10))
+        # customtkinter.CTkButton(modal, text="Añadir", command=lambda: self.add_articulo(fields_value), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=curr_row+1, column=2, pady=10, padx=(0,10), sticky='e')
 
 
 
@@ -450,6 +455,9 @@ class ArticulosTab(TabFrame):
             id=r.content["id"]
             name=r.content["name"]
             self.proveedores[id]=name
+            #actualizar proveedores en dropdowns 
+            options = self.get_field_options("Proveedor")
+            self.dropdowns[0].configure(values=options) #menu nuevo articulo
             return True
         return False
     

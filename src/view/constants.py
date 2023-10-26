@@ -14,3 +14,7 @@ YELLOW_HOVER = "#ad7007"
 #Fonts
 HEADING_FONT= "candara 25 bold"
 DEFAULT_FONT = "_"
+
+
+#Datos
+MISSING_VALUE = "Sin especificar"
