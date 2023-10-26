@@ -129,6 +129,7 @@ class ArticulosFilter():
             return None
         return self.parent.get_id_from_value(dict,value)
     
+    
     def update_options(self, field):
         options = self.parent.get_field_options(field)
 

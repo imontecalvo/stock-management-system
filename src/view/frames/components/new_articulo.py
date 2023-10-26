@@ -82,7 +82,6 @@ class NewArticulo():
 
     def update_options(self, field):
         options = self.parent.get_field_options(field)
-
         if field=="Proveedor":
             self.supplier.configure(values=options)
         elif field=="Marca":

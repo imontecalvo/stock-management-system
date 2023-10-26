@@ -399,16 +399,16 @@ class ArticulosTab(TabFrame):
     
     def add_marca(self, name):
         if len(name)==0:
-            #TODO manejar error
-            return False
+            return Response(False, "ERROR: Ingrese una marca.")
         
-        r = self.controller.add_proveedor(name)
-        if r["ok"]:
-            # id=r["content"]["id"]
-            # name=r["content"]["name"]
-            # self.proveedores[id]=name
-            return True
-        return False
+        r = self.controller.add_marca(name)
+        if r.ok:
+            id=r.content["id"]
+            name=r.content["name"]
+            self.marcas[id]=name
+            self.filters.update_options("Marca")
+            return Response(True)
+        return Response(False, "ERROR: Marca ya existente.")
     
     def add_tipo(self, name):
         if len(name)==0:

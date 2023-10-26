@@ -45,3 +45,6 @@ class Controller():
     
     def add_proveedor(self, name):
         return self.model.add_proveedor(name)
+    
+    def add_marca(self, name):
+        return self.model.add_marca(name)

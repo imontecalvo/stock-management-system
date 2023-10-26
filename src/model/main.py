@@ -153,7 +153,6 @@ class Model():
         except:
             return Response(False,"ERROR: No se pudo cargar los tipos.")
 
-    # Recibe diccionario con todos los campos de Articulo y lo inserta en la tabla de Articulo
     def add_proveedor(self, name):
         try:
             session = self.Session()
@@ -163,3 +162,13 @@ class Model():
             return Response(True,{"name": new_proveedor.nombre, "id": new_proveedor.id})
         except:
             return Response(False, "ERROR: No se pudo añadir el proveedor.")
+        
+    def add_marca(self, name):
+        try:
+            session = self.Session()
+            new_marca = Marca(name)
+            session.add(new_marca)
+            session.commit()
+            return Response(True,{"name": new_marca.nombre, "id": new_marca.id})
+        except:
+            return Response(False, "ERROR: No se pudo añadir la marca.")
