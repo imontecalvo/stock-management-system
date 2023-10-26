@@ -70,7 +70,7 @@ class NewArticulo():
 
         var = tk.StringVar(self.modal)
         var.set(MISSING_VALUE)
-        options = self.get_field_options(label)
+        options = self.parent.get_field_options(label)
         dropdown_menu = customtkinter.CTkOptionMenu(self.modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
 
         # inputwin_command=lambda: InputWindow(self.modal, label, title, command)
@@ -78,22 +78,10 @@ class NewArticulo():
 
         dropdown_menu.grid(row=row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
         return dropdown_menu, var
-
-
-    #Devuelve la lista de opciones de proveedores, marca o tipo para los dropdown menus
-    #Concatena el valor "Sin especificar" a la lista de valores extraida de la base de datos
-    def get_field_options(self, field):
-            if field == "Proveedor":
-                return [MISSING_VALUE]+list(self.parent.proveedores.values())
-            elif field == "Marca":
-                return [MISSING_VALUE]+list(self.parent.marcas.values())
-            elif field == "Tipo":
-                return [MISSING_VALUE]+list(self.parent.tipos.values())
-            return ["error"]
     
 
-    def update_options(self, field, input):
-        options = self.get_field_options(field)
+    def update_options(self, field):
+        options = self.parent.get_field_options(field)
 
         if field=="Proveedor":
             self.supplier.configure(values=options)

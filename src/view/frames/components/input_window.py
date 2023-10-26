@@ -39,7 +39,7 @@ class InputWindow():
         r = command(input)
         field = self.title.split(" ")[-1]
         if r.ok:
-            self.parent.update_options(field, input)
+            self.parent.update_options(field)
             self.window.destroy()
         else:
             self.error_label.configure(text=r.content)

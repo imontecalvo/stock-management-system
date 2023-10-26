@@ -51,7 +51,7 @@ class ArticulosTab(TabFrame):
 
 
         #Filter seccion
-        filters = ArticulosFilter(self)
+        self.filters = ArticulosFilter(self)
 
         # Table Actions
         actions_frame = tk.Frame(self.frame)
@@ -80,7 +80,7 @@ class ArticulosTab(TabFrame):
         # Deseleccionar elementos al hacer click fuera 
         self.frame.bind("<Button-1>", lambda event: self.remove_selection())
         frame1.bind("<Button-1>", lambda event: self.remove_selection())
-        filters.filter_frame.bind("<Button-1>", lambda event: self.remove_selection())
+        self.filters.filter_frame.bind("<Button-1>", lambda event: self.remove_selection())
         actions_frame.bind("<Button-1>", lambda event: self.remove_selection())
     
 
@@ -391,9 +391,8 @@ class ArticulosTab(TabFrame):
             id=r.content["id"]
             name=r.content["name"]
             self.proveedores[id]=name
-            #actualizar proveedores en dropdowns 
-            # options = self.get_field_options("Proveedor")
-            # self.dropdowns[0].configure(values=options) #menu nuevo articulo
+            #TODO actualizar proveedores en filtros
+            self.filters.update_options("Proveedor")
             return Response(True)
         return Response(False, "ERROR: Proveedor ya existente.")
         
