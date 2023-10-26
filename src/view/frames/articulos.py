@@ -100,8 +100,11 @@ class ArticulosTab(TabFrame):
 
     #Genera tree view
     def generate_tree(self):
+        tree_frame = tk.Frame(self.frame)
+        tree_frame.grid(row=3, column=0,sticky='nsew',rowspan=1, padx=5, pady=5)
+
         columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
-        self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
+        self.tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
         self.tree.columns=columns
         self.tree.separators=[]
         self.update_sep = False
@@ -115,7 +118,9 @@ class ArticulosTab(TabFrame):
             s = ttk.Separator(master=self.tree, orient='vertical', style='black.TSeparator', takefocus= 0)
             self.tree.separators.append(s)
 
-        self.tree.grid(row=3,column=0, sticky='nsew',rowspan=1, padx=5, pady=5)
+        self.tree.grid(row=0,column=0, sticky='nsew',rowspan=1)
+        tree_frame.grid_rowconfigure(0, weight=1)
+        tree_frame.grid_columnconfigure(0, weight=1)
         self.set_separator_col(columns,True)
 
         #Habilita/Deshabilita boton de Eliminar Seleccion
@@ -135,6 +140,12 @@ class ArticulosTab(TabFrame):
         self.tree.tag_configure('colour', background=LIGHT_GRAY2)
 
         self.tree.after(300, lambda: self.set_separator_col(columns,True))
+
+        
+        #create CTk scrollbar
+        scrollbar = customtkinter.CTkScrollbar(tree_frame, command=self.tree.yview,fg_color="white")
+        scrollbar.grid(row=0, column=1, sticky="ns",pady=(20,0))
+        self.tree.configure(yscrollcommand=scrollbar.set)
 
 
 
