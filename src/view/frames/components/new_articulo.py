@@ -74,14 +74,11 @@ class NewArticulo():
         dropdown_menu = customtkinter.CTkOptionMenu(self.modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
 
         # inputwin_command=lambda: InputWindow(self.modal, label, title, command)
-        customtkinter.CTkButton(self.modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command=lambda: self.new_option(title, command)).grid(row=row, column=3, pady=7, padx=(0,10), sticky='e')
+        customtkinter.CTkButton(self.modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command=lambda: InputWindow(self, "Nombre", title, command)).grid(row=row, column=3, pady=7, padx=(0,10), sticky='e')
 
         dropdown_menu.grid(row=row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
         return dropdown_menu, var
 
-    def new_option(self, title, command=None):
-        InputWindow(self, "Nombre", title, command)
-        print("cuak")
 
     #Devuelve la lista de opciones de proveedores, marca o tipo para los dropdown menus
     #Concatena el valor "Sin especificar" a la lista de valores extraida de la base de datos
@@ -105,4 +102,6 @@ class NewArticulo():
             self.brand.configure(values=options)
         else:
             self.type.configure(values=options)
+
+        #self.parent.update_filter_options()
             
