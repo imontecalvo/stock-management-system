@@ -48,3 +48,6 @@ class Controller():
     
     def add_marca(self, name):
         return self.model.add_marca(name)
+    
+    def add_tipo(self, name):
+        return self.model.add_tipo(name)

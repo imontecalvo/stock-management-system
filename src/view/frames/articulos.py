@@ -410,18 +410,19 @@ class ArticulosTab(TabFrame):
             return Response(True)
         return Response(False, "ERROR: Marca ya existente.")
     
+
     def add_tipo(self, name):
         if len(name)==0:
-            #TODO manejar error
-            return False
+            return Response(False, "ERROR: Ingrese un tipo de producto.")
         
-        r = self.controller.add_proveedor(name)
-        if r["ok"]:
-            # id=r["content"]["id"]
-            # name=r["content"]["name"]
-            # self.proveedores[id]=name
-            return True
-        return False
+        r = self.controller.add_tipo(name)
+        if r.ok:
+            id=r.content["id"]
+            name=r.content["name"]
+            self.tipos[id]=name
+            self.filters.update_options("Tipo")
+            return Response(True)
+        return Response(False, "ERROR: Tipo de producto ya existente.")
         
 
 

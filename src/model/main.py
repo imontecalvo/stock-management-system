@@ -172,3 +172,13 @@ class Model():
             return Response(True,{"name": new_marca.nombre, "id": new_marca.id})
         except:
             return Response(False, "ERROR: No se pudo añadir la marca.")
+        
+    def add_tipo(self, name):
+        try:
+            session = self.Session()
+            new_tipo = Tipo(name)
+            session.add(new_tipo)
+            session.commit()
+            return Response(True,{"name": new_tipo.nombre, "id": new_tipo.id})
+        except:
+            return Response(False, "ERROR: No se pudo añadir el tipo de producto.")
