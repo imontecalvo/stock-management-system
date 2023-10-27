@@ -100,11 +100,11 @@ class ArticulosTab(TabFrame):
 
     #Genera tree view
     def generate_tree(self):
-        tree_frame = tk.Frame(self.frame)
-        tree_frame.grid(row=3, column=0,sticky='nsew',rowspan=1, padx=5, pady=5)
+        # tree_frame = tk.Frame(self.frame, bg="red")
+        # tree_frame.grid(row=3, column=0,sticky='nsew', padx=5, pady=5)
 
         columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
-        self.tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
+        self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
         self.tree.columns=columns
         self.tree.separators=[]
         self.update_sep = False
@@ -115,13 +115,13 @@ class ArticulosTab(TabFrame):
             if c == "Codigo":
                 self.tree.column(c, width=100)
 
-            s = ttk.Separator(master=self.tree, orient='vertical', style='black.TSeparator', takefocus= 0)
-            self.tree.separators.append(s)
+            # s = ttk.Separator(master=self.tree, orient='vertical', style='black.TSeparator', takefocus= 0)
+            # self.tree.separators.append(s)
 
-        self.tree.grid(row=0,column=0, sticky='nsew',rowspan=1)
-        tree_frame.grid_rowconfigure(0, weight=1)
-        tree_frame.grid_columnconfigure(0, weight=1)
-        self.set_separator_col(columns,True)
+        self.tree.grid(row=3,column=0, sticky='nsew', pady=10)
+        # tree_frame.grid_rowconfigure(0, weight=1)
+        # tree_frame.grid_columnconfigure(0, weight=1)
+        # self.set_separator_col(columns,True)
 
         #Habilita/Deshabilita boton de Eliminar Seleccion
         self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
@@ -139,19 +139,31 @@ class ArticulosTab(TabFrame):
         style.configure("Treeview.Heading", background='light yellow')#--> color headings
         self.tree.tag_configure('colour', background=LIGHT_GRAY2)
 
-        self.tree.after(300, lambda: self.set_separator_col(columns,True))
+        # self.tree.after(300, lambda: self.set_separator_col(columns,True))
 
         
         #create CTk scrollbar
-        scrollbar = customtkinter.CTkScrollbar(tree_frame, command=self.tree.yview,fg_color="white")
-        scrollbar.grid(row=0, column=1, sticky="ns",pady=(20,0))
-        self.tree.configure(yscrollcommand=scrollbar.set)
+        # scrollbar = customtkinter.CTkScrollbar(tree_frame, command=self.tree.yview,fg_color="white")
+        # scrollbar.grid(row=0, column=1, sticky="ns",pady=(20,0))
+        # self.tree.configure(yscrollcommand=scrollbar.set)
+
+        self.tree.bind("<ButtonRelease-1>", lambda event: self.update_tree())
+        self.tree.bind("<MouseWheel>", lambda event: self.update_tree())
+        self.tree.bind("<Button-4>", lambda event: self.update_tree())
+        self.tree.bind("<Button-5>", lambda event: self.update_tree())
 
 
 
     #Recibe un diccionario de filtros y actualiza tree view con articulos filtrados
     def update_tree(self, filters={}):
         self.tree.delete(*self.tree.get_children())
+
+        total_items = self.controller.get_no_articulos()
+        print(total_items)
+        start = int(self.tree.yview()[0] * total_items)
+        end = int(self.tree.yview()[1] * total_items)
+        print(f"s: {start} - end: {end} -- {self.tree.yview()}")
+        # r = self.controller.get_articulos_in_range(filters, start, end)
         r = self.controller.get_articulos(filters)
         if r.ok:
             articulos = r.content

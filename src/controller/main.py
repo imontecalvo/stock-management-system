@@ -4,6 +4,9 @@ class Controller():
     def __init__(self, model):
         self.model=model
 
+    def get_no_articulos(self):
+        return self.model.get_no_articulos()
+
     def add_articulo(self, articulo):
         return self.model.add_articulo(articulo)
 

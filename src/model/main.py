@@ -14,6 +14,14 @@ class Model():
         self.Session = sessionmaker(bind=self.engine)
         # self.Articulo = Articulo
     
+    def get_no_articulos(self):
+        query = "SELECT COUNT(*) FROM Articulos;"
+        session = self.Session()
+        res = session.execute(text(query))
+        session.close()
+        return res.scalar()
+
+
     # Recibe diccionario con todos los campos de Articulo y lo inserta en la tabla de Articulo
     def add_articulo(self, data):
         try:
