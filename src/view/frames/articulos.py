@@ -98,30 +98,32 @@ class ArticulosTab(TabFrame):
                 total_width+=w
                 self.tree.separators[i].grid(row=1, column=0, ipady=300, pady=20, sticky='w', padx=(total_width,0))
 
-    #Genera tree view
     def generate_tree(self):
-        tree_frame = tk.Frame(self.frame)
-        tree_frame.grid(row=3, column=0,sticky='nsew',rowspan=1, padx=5, pady=5)
+        # tree_frame = tk.Frame(self.frame, bg="red")
+        # tree_frame.grid(row=3, column=0,sticky='nsew',rowspan=1, padx=5, pady=5)
+        # tree_frame.grid_rowconfigure(0, weight=1)
+        # tree_frame.grid_columnconfigure(0, weight=1)
 
         columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
-        self.tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
+        self.tree = ttk.Treeview(self.frame, columns=columns, show="headings")
+        self.tree.grid(row=3, column=0,sticky='nsew',rowspan=1, padx=5, pady=5)
+
         self.tree.columns=columns
-        self.tree.separators=[]
-        self.update_sep = False
+        # self.tree.separators=[]
+        # self.update_sep = False
 
         for i, c in enumerate(columns):
-            self.tree.grid_columnconfigure(i, weight=1)
+            # self.tree.grid_columnconfigure(i, weight=1)
             self.tree.heading(c,text=c)
             if c == "Codigo":
                 self.tree.column(c, width=100)
 
-            s = ttk.Separator(master=self.tree, orient='vertical', style='black.TSeparator', takefocus= 0)
-            self.tree.separators.append(s)
-
-        self.tree.grid(row=0,column=0, sticky='nsew',rowspan=1)
-        tree_frame.grid_rowconfigure(0, weight=1)
-        tree_frame.grid_columnconfigure(0, weight=1)
-        self.set_separator_col(columns,True)
+            # s = ttk.Separator(master=self.tree, orient='vertical', style='black.TSeparator', takefocus= 0)
+            # self.tree.separators.append(s)
+        
+        # self.tree.grid(row=0,column=0, sticky='nsew',rowspan=1)
+        # self.tree.grid(row=0,column=0, sticky='nsew',rowspan=1, padx=5, pady=5)
+        # self.set_separator_col(columns,True)
 
         #Habilita/Deshabilita boton de Eliminar Seleccion
         self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
@@ -132,34 +134,88 @@ class ArticulosTab(TabFrame):
         # Vincular el menú contextual al TreeView y habilitar la selección al clic derecho
         self.tree.bind("<Button-3>", self.open_row_menu)
 
-        self.tree.bind("<ButtonRelease-1>", lambda event: self.update_separators())
-        self.tree.bind("<Motion>", lambda event: self.set_separator_col(columns))
+        # self.tree.bind("<ButtonRelease-1>", lambda event: self.update_separators())
+        # self.tree.bind("<Motion>", lambda event: self.set_separator_col(columns))
 
         style = ttk.Style()
         style.configure("Treeview.Heading", background='light yellow')#--> color headings
         self.tree.tag_configure('colour', background=LIGHT_GRAY2)
 
-        self.tree.after(300, lambda: self.set_separator_col(columns,True))
+        # self.tree.after(300, lambda: self.set_separator_col(columns,True))
 
         
         #create CTk scrollbar
-        scrollbar = customtkinter.CTkScrollbar(tree_frame, command=self.tree.yview,fg_color="white")
-        scrollbar.grid(row=0, column=1, sticky="ns",pady=(20,0))
-        self.tree.configure(yscrollcommand=scrollbar.set)
+        # scrollbar = customtkinter.CTkScrollbar(tree_frame, command=self.tree.yview,fg_color="white")
+        # scrollbar.grid(row=0, column=1, sticky="ns",pady=(20,0))
+        self.tree.configure(yscrollcommand=None)
+
+        # self.tree.bind("<ButtonRelease-1>", lambda event: self.update_tree())
+        # self.tree.bind("<MouseWheel>", lambda event: self.update_tree())
+        self.tree.bind("<Button-4>", lambda event: self.on_scrolling_up())
+        self.tree.bind("<Button-5>", lambda event: self.on_scrolling_down())
+
+        
+        # self.tree = ttk.Treeview(tree_frame, columns=("Artículos",))
+        # self.tree.heading(0, text="Artículos")
+        # self.tree.grid(row=0,column=0, sticky='nsew',rowspan=1, padx=5, pady=5)
+
+        # # Carga inicial de datos
+        self.total_items = self.controller.get_no_articulos()  # Cantidad total de elementos en tu base de datos
+        self.visible_items = 50  # Cantidad de elementos visibles a la vez
+
+        self.tree.offset = 0
 
 
+    def on_scrolling_up(self):
+        OFFSET_EXTRA = 4
+        new_value = max(0,self.tree.offset-OFFSET_EXTRA)
+        if new_value != self.tree.offset:
+            self.tree.offset = new_value
+            self.update_tree()
+        return "break"
 
-    #Recibe un diccionario de filtros y actualiza tree view con articulos filtrados
+    def on_scrolling_down(self):
+        OFFSET_EXTRA = 4
+
+        new_value = min(self.total_items-40,self.tree.offset+OFFSET_EXTRA)
+        #Si el offset sigue siendo el mismo, no hace falta actualizar el treeview
+        if new_value != self.tree.offset:
+            self.tree.offset = new_value
+            self.update_tree()
+
+        #Si estoy visualizando los ultimos elementos, ahi si puedo scrollear, de lo contraro
+        #scrollear fisicamente no desplaza el treeview, sino que recarga nuevos registros
+        if self.tree.offset+OFFSET_EXTRA >= self.total_items-40:
+            self.tree.configure(yscrollcommand='')
+        else:
+            return "break"
+            # self.tree.configure(yscrollcommand=lambda *args: self.tree.yview_moveto(0))
+
     def update_tree(self, filters={}):
+        VISIBLE_ITEMS = 40
+        self.tree.yview_moveto(0.0)
+        # print(self.tree.offset, self.tree.yview())
+
+
+        # start = int(self.tree.yview()[0] * self.total_items)
+        # print(f"s:{start} - {self.tree.yview()}")
+
         self.tree.delete(*self.tree.get_children())
-        r = self.controller.get_articulos(filters)
+
+        lower = max(0, self.tree.offset)
+        greater = min(self.total_items,lower+VISIBLE_ITEMS)
+
+        # print("l:", lower, "g:", greater)
+        # r = self.controller.get_articulos(filters)
+        r = self.controller.get_articulos_in_range(lower, greater, filters)
         if r.ok:
             articulos = r.content
+            # print(f"long: {len(articulos)}")
             for idx,a in enumerate(articulos):
                 proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else self.MISSING_VALUE
                 marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else self.MISSING_VALUE
                 tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
-                data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
+                data = (a.id, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
                 
                 if not idx%2:
                     self.tree.insert('',"end",id=a.id, values=data)
@@ -170,6 +226,94 @@ class ArticulosTab(TabFrame):
         
         self.delete_sel_button.configure(state="disabled")
         self.edit_button.configure(state="disabled")
+        
+
+
+    #Genera tree view
+    # def generate_tree(self):
+    #     tree_frame = tk.Frame(self.frame)
+    #     tree_frame.grid(row=3, column=0,sticky='nsew',rowspan=1, padx=5, pady=5)
+
+    #     columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
+    #     self.tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
+    #     self.tree.columns=columns
+    #     self.tree.separators=[]
+    #     self.update_sep = False
+
+    #     for i, c in enumerate(columns):
+    #         self.tree.grid_columnconfigure(i, weight=1)
+    #         self.tree.heading(c,text=c)
+    #         if c == "Codigo":
+    #             self.tree.column(c, width=100)
+
+    #         s = ttk.Separator(master=self.tree, orient='vertical', style='black.TSeparator', takefocus= 0)
+    #         self.tree.separators.append(s)
+
+    #     self.tree.grid(row=0,column=0, sticky='nsew',rowspan=1)
+    #     tree_frame.grid_rowconfigure(0, weight=1)
+    #     tree_frame.grid_columnconfigure(0, weight=1)
+    #     self.set_separator_col(columns,True)
+
+    #     #Habilita/Deshabilita boton de Eliminar Seleccion
+    #     self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
+
+    #     #Deselecciona registros al hacer click en un espacio en blanco de la tabla
+    #     self.tree.bind("<Button-1>", lambda event: self.click_l_event())
+
+    #     # Vincular el menú contextual al TreeView y habilitar la selección al clic derecho
+    #     self.tree.bind("<Button-3>", self.open_row_menu)
+
+    #     self.tree.bind("<ButtonRelease-1>", lambda event: self.update_separators())
+    #     self.tree.bind("<Motion>", lambda event: self.set_separator_col(columns))
+
+    #     style = ttk.Style()
+    #     style.configure("Treeview.Heading", background='light yellow')#--> color headings
+    #     self.tree.tag_configure('colour', background=LIGHT_GRAY2)
+
+    #     self.tree.after(300, lambda: self.set_separator_col(columns,True))
+
+        
+    #     #create CTk scrollbar
+    #     scrollbar = customtkinter.CTkScrollbar(tree_frame, command=self.tree.yview,fg_color="white")
+    #     scrollbar.grid(row=0, column=1, sticky="ns",pady=(20,0))
+    #     self.tree.configure(yscrollcommand=scrollbar.set)
+
+    #     self.tree.bind("<ButtonRelease-1>", lambda event: self.update_tree())
+    #     self.tree.bind("<MouseWheel>", lambda event: self.update_tree())
+    #     self.tree.bind("<Button-4>", lambda event: self.update_tree())
+    #     self.tree.bind("<Button-5>", lambda event: self.update_tree())
+
+
+
+    #Recibe un diccionario de filtros y actualiza tree view con articulos filtrados
+    # def update_tree(self, filters={}):
+    #     self.tree.delete(*self.tree.get_children())
+
+    #     total_items = self.controller.get_no_articulos()
+    #     print(total_items)
+    #     print(self.tree.xview())
+    #     # start = int(self.tree.yview()[0] * total_items)
+    #     # end = int(self.tree.yview()[1] * total_items)
+    #     # print(f"s: {start} - end: {end} -- {self.tree.yview()}")
+
+    #     r = self.controller.get_articulos(filters)
+    #     if r.ok:
+    #         articulos = r.content
+    #         for idx,a in enumerate(articulos):
+    #             proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else self.MISSING_VALUE
+    #             marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else self.MISSING_VALUE
+    #             tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
+    #             data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
+                
+    #             if not idx%2:
+    #                 self.tree.insert('',"end",id=a.id, values=data)
+    #             else:
+    #                 self.tree.insert('',"end",id=a.id, values=data, tags=("colour"))
+    #     else:
+    #         self.frame.after(100, lambda: ErrorWindow(r.content,self.root))
+        
+    #     self.delete_sel_button.configure(state="disabled")
+    #     self.edit_button.configure(state="disabled")
         
     #Abre menu al hacer click derecho sobre un articulo en tree view
     def open_row_menu(self, event):
