@@ -67,7 +67,7 @@ class PaginationBar():
 
     
     def get_last_page(self):
-        return ceil(self.total_records()/self.records_per_page) 
+        return max(ceil(self.total_records()/self.records_per_page),1)
 
     def get_limit_offset(self):
         return self.records_per_page, (self.current_page-1)*self.records_per_page

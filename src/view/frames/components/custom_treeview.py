@@ -86,6 +86,7 @@ class CustomTreeView():
         return self.tree.selection()
     
     def delete_content(self):
+        self.last_row=0
         self.tree.delete(*self.tree.get_children())
 
     def height(self):
