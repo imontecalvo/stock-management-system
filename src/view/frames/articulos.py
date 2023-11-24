@@ -75,19 +75,15 @@ class ArticulosTab(TabFrame):
     
         # Creacion de Tabla
         self.tree = self.create_tree()
-
-        # self.update_tree()
+        self.page_bar = PaginationBar(self.actions_frame ,self.update_tree, self.number_of_records,self.tree)
+        self.frame.after(500, lambda: self.initialize_page_bar())
         
-        self.page_bar = PaginationBar(self.actions_frame ,self.update_tree, self.controller.get_no_articulos,self.tree)
-        # self.page_bar.update(0)
 
         # Deseleccionar elementos al hacer click fuera 
         self.frame.bind("<Button-1>", lambda event: self.tree.remove_selection())
         frame1.bind("<Button-1>", lambda event: self.tree.remove_selection())
         self.filters.filter_frame.bind("<Button-1>", lambda event: self.tree.remove_selection())
         self.actions_frame.bind("<Button-1>", lambda event: self.tree.remove_selection())
-
-        print("asd: ", self.tree.height())
 
     
 
@@ -111,6 +107,10 @@ class ArticulosTab(TabFrame):
         tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
         return (a.id, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
     
+    def initialize_page_bar(self):
+        self.page_bar.initialize()
+        self.page_bar.update(0)
+
     def create_tree(self):
         columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
         col_width = [100,None,None,None,None,None,None,None]
@@ -124,12 +124,12 @@ class ArticulosTab(TabFrame):
         return tree
 
     #Recibe un diccionario de filtros y actualiza tree view con articulos filtrados
-    def update_tree(self, limit, offset):
-        # filters = self.filters.get_values()
-        filters = {}
-
+    def update_tree(self):
+        filters = self.filters.get_values()
+        limit, offset = self.page_bar.get_limit_offset()
+        
         self.tree.delete_content()
-        r = self.controller.get_articulos_in_range(offset, offset+limit, filters)
+        r = self.controller.get_articulos_in_range(limit, offset, filters)
         if r.ok:
             articulos = r.content
             for a in articulos:
@@ -156,6 +156,17 @@ class ArticulosTab(TabFrame):
         self.delete_sel_button.configure(state=state_delete)
         self.edit_button.configure(state=state_edit)
 
+    def number_of_records(self):
+        filters = self.filters.get_values()
+        r = self.controller.get_no_articulos(filters)
+        if r.ok:
+            return r.content
+        else:
+            self.frame.after(100, lambda: ErrorWindow(r.content,self.root))
+            return 0
+
+    def new_filters(self):
+        self.page_bar.update(JUMP_2_FIRST_PAGE)
 
     #Recibe un diccionario con los valores de un articulo a agregar y lo añade a la base de datos
     #En caso de error, se muestra el mensaje en un pop up

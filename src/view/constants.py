@@ -18,3 +18,6 @@ DEFAULT_FONT = "_"
 
 #Datos
 MISSING_VALUE = "Sin especificar"
+JUMP_2_FIRST_PAGE = -2
+SAME_PAGE = 0
+ROW_HEIGHT = 20

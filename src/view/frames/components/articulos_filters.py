@@ -106,7 +106,7 @@ class ArticulosFilter():
         if key in ["codigo","descripcion"]: #Si es entry optimizo para ahorrar queries
             on_key_release(self)
         else:
-            self.parent.update_tree(self.filters_dic.copy())
+            self.parent.new_filters()
 
     #Reestablece los filtros a los valores por defecto y actualiza el tree view
     def clear_filters(self):
@@ -118,7 +118,7 @@ class ArticulosFilter():
         self.filter_entries[3].set("Todas las marcas")
         self.filter_entries[4].set("Todos los tipos")
 
-        self.parent.update_tree(self.filters_dic)
+        self.parent.new_filters()
 
     #Devuelve el ID de un determinado valor para los filtros de dropdown menu.
     #En caso de que sean "Todos los X" devuelve string vacio, sino llama a parent.get_id_from_value
@@ -141,6 +141,10 @@ class ArticulosFilter():
             self.type.configure(values=["Todos los tipos"]+options)
 
 
+    def get_values(self):
+        return self.filters_dic.copy()
+
+
 #Establece un timer de 250 milisegundos. 
 #Si la funcion se vuelve a llamar antes de que llegue a cero, se cancela y se restablece, ahorrandonos una query
 #Si llega a cero, se realiza la query
@@ -148,4 +152,4 @@ class ArticulosFilter():
 def on_key_release(articulos_filter):
         if hasattr(on_key_release, "timer"):
             articulos_filter.filter_frame.after_cancel(on_key_release.timer)
-        on_key_release.timer = articulos_filter.filter_frame.after(250, lambda: articulos_filter.parent.update_tree(articulos_filter.filters_dic.copy()))
+        on_key_release.timer = articulos_filter.filter_frame.after(225, lambda: articulos_filter.parent.new_filters())
