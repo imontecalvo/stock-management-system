@@ -1,68 +1,93 @@
+# import tkinter as tk
+# from tkinter import ttk
+
+# def calculate_visible_rows(treeview_height, row_height):
+#     return int(treeview_height / row_height)
+
+# # Create a simple Tkinter window
+# root = tk.Tk()
+# root.title("Treeview Pagination")
+# root.attributes("-zoomed", True)
+
+# root.grid_rowconfigure(1, weight=1)
+
+# b = tk.Button(root, text="Click", command=lambda: print("Number of visible rows:", int(treeview.winfo_height()//row_height)-1))
+# b.grid(row=0,column=0)
+
+
+# # Create a Treeview widget
+# treeview = ttk.Treeview(root, columns=("Column1", "Column2"))
+# # Insert sample data
+# for i in range(1, 1):
+#     treeview.insert("", "end", values=("Item {}".format(i), "Description {}".format(i)))
+
+# # Pack the Treeview widget
+# treeview.grid(row=1, column=0, sticky='nsew')
+
+# # Get the total height of the Treeview
+# treeview_height = treeview.winfo_reqheight()
+
+# # Assume each row has a height of 20 pixels (you should adjust this based on your actual row height)
+# row_height = 20
+
+# # Calculate the number of visible rows
+# visible_rows = calculate_visible_rows(treeview.winfo_reqheight(), row_height)
+
+# # Print the result
+# # print("Number of visible rows:", calculate_visible_rows(treeview.winfo_reqheight(), row_height))
+
+# print(treeview.winfo_height())
+# # print("Number of visible rows:", int(treeview.winfo_height()//row_height)-1)
+
+# root.after(10000, print("Visible rows:", int(treeview.winfo_height()//row_height)-1))
+# # Start the Tkinter event loop
+# root.mainloop()
+
+# #
+
+
 import tkinter as tk
 from tkinter import ttk
-from ttkthemes import ThemedTk
 
-class PaginatedTreeView:
-    def __init__(self, root, items_per_page=10):
-        self.root = root
-        self.items_per_page = items_per_page
-        self.page_number = 1
+def calculate_visible_rows(treeview, row_height):
+    treeview.update()  # Force an update to get the correct dimensions
+    treeview_height = treeview.winfo_height()
+    return int(treeview_height / row_height)
 
-        # Crear el Treeview
-        self.tree = ttk.Treeview(root, columns=('ID', 'Nombre', 'Precio'))
-        self.tree.heading('#0', text='ID')
-        self.tree.column('#0', width=50, anchor='center')
-        self.tree.heading('#1', text='Nombre')
-        self.tree.column('#1', width=150, anchor='w')
-        self.tree.heading('#2', text='Precio')
-        self.tree.column('#2', width=100, anchor='center')
+# Create a simple Tkinter window
+root = tk.Tk()
+root.title("Treeview Pagination")
+root.attributes("-zoomed", True)
+root.grid_rowconfigure(0,weight=1)
+root.grid_columnconfigure(0,weight=1)
 
-        # Agregar datos de ejemplo (reemplácelos con sus propios datos)
-        self.data = [
-            (1, 'Artículo 1', 10.99),
-            (2, 'Artículo 2', 19.99),
-            # ... más datos ...
-            (100, 'Artículo 100', 5.99)
-        ]
+# Create a Treeview widget
 
-        self.show_page()
 
-        # Crear botones de navegación
-        prev_button = ttk.Button(root, text='Anterior', command=self.prev_page)
-        prev_button.pack(side=tk.LEFT, padx=5)
-        next_button = ttk.Button(root, text='Siguiente', command=self.next_page)
-        next_button.pack(side=tk.RIGHT, padx=5)
+frame = tk.Frame(root, bg="red")
+frame.grid(row=0, column=0, sticky='nsew')
+frame.grid_rowconfigure(1,weight=1)
 
-    def show_page(self):
-        # Limpiar Treeview
-        for item in self.tree.get_children():
-            self.tree.delete(item)
+l = tk.Label(frame, text="ASdadsas")
+l.grid(row=0,column=0, pady=100)
 
-        # Calcular índices de inicio y fin para la página actual
-        start_index = (self.page_number - 1) * self.items_per_page
-        end_index = start_index + self.items_per_page
+treeview = ttk.Treeview(frame, columns=("Column1", "Column2"))
 
-        # Mostrar los datos de la página actual en el Treeview
-        for item_data in self.data[start_index:end_index]:
-            self.tree.insert('', 'end', values=item_data)
+# Insert sample data
+for i in range(1, 101):
+    treeview.insert("", "end", values=("Item {}".format(i), "Description {}".format(i)))
 
-    def prev_page(self):
-        if self.page_number > 1:
-            self.page_number -= 1
-            self.show_page()
+# Pack the Treeview widget
+treeview.grid(row=1,column=0, sticky='nsew')
 
-    def next_page(self):
-        max_page = len(self.data) // self.items_per_page + 1
-        if self.page_number < max_page:
-            self.page_number += 1
-            self.show_page()
+# Assume each row has a height of 20 pixels (you should adjust this based on your actual row height)
+row_height = 20
 
-if __name__ == "__main__":
-    root = ThemedTk(theme="arc")  # Puedes cambiar el tema según tus preferencias
-    root.title('Treeview Paginado')
-    
-    paginated_treeview = PaginatedTreeView(root)
-    
-    paginated_treeview.tree.pack(expand=True, fill=tk.BOTH)
-    
-    root.mainloop()
+# Calculate the number of visible rows
+visible_rows = calculate_visible_rows(treeview, row_height)
+
+# Print the result
+print("Number of visible rows:", visible_rows)
+
+# Start the Tkinter event loop
+root.mainloop()

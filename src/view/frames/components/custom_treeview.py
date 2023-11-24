@@ -4,11 +4,7 @@ from ...constants import *
 from ..components.error_window import ErrorWindow
 
 class CustomTreeView():
-    def __init__(self, parent, columns, fetch_records, fetch_n_records, col_width=None, updating_tv_commands=None):
-        self.fetch_records=fetch_records
-        self.fetch_n_records=fetch_n_records
-        self.updating_tv_commands=updating_tv_commands
-        
+    def __init__(self, parent, columns, col_width=None):        
         self.parent=parent
 
         self.tree = ttk.Treeview(parent.frame, columns=columns, show="headings")
@@ -21,8 +17,6 @@ class CustomTreeView():
             else:
                 self.tree.column(c)
 
-
-
         #Deselecciona registros al hacer click en un espacio en blanco de la tabla
         self.tree.bind("<Button-1>", lambda event: self.click_l_event())
 
@@ -33,17 +27,9 @@ class CustomTreeView():
         style.configure("Treeview.Heading", background='light yellow')#--> color headings
         self.tree.tag_configure('colour', background=LIGHT_GRAY2)
 
-        self.tree.bind("<Button-4>", lambda event: self.on_scrolling_up())
-        self.tree.bind("<Button-5>", lambda event: self.on_scrolling_down())
-
-
-        #Carga inicial de datos
-        self.total_items = self.fetch_n_records()  # Cantidad total de elementos en tu base de datos
         self.DISPLAYED_ITEMS = 40  # Cantidad de elementos visibles a la vez
-        self.OFFSET_EXTRA = 4 # Desplazamiento
-        self.offset = 0
-        self.global_selection=()
-
+        self.current_page = 0
+        self.last_row=0
 
 
     #Menu Opciones de cada registro. 
@@ -77,66 +63,31 @@ class CustomTreeView():
             self.row_menu.post(event.x_root, event.y_root)
 
     def click_l_event(self):
-        self.update_sep = True
+        # self.update_sep = True
         self.remove_selection()
 
     #Elimina seleccion y cierra menu en caso de estar abierto cuando se hace click en un la tabla
     def remove_selection(self):
-        self.global_selection=()
         self.row_menu.unpost()
         self.tree.selection_remove(self.tree.selection())
 
-    def on_scrolling_up(self):
-        new_value = max(0,self.offset-self.OFFSET_EXTRA)
-        if new_value != self.offset:
-            self.offset = new_value
-            self.update_tree(keep_selection=True)
-        return "break"
-
-    def on_scrolling_down(self):
-        new_value = min(self.total_items-self.DISPLAYED_ITEMS , self.offset+self.OFFSET_EXTRA)
-        #Si el offset sigue siendo el mismo, no hace falta actualizar el treeview
-        if new_value != self.offset:
-            self.offset = new_value
-            self.update_tree(keep_selection=True)
-
-        #Si estoy visualizando los ultimos elementos, ahi si puedo scrollear, de lo contraro
-        #scrollear fisicamente no desplaza el treeview, sino que recarga nuevos registros
-        if self.offset+self.OFFSET_EXTRA >= self.total_items-self.DISPLAYED_ITEMS:
-            self.tree.configure(yscrollcommand='')
-        else:
-            return "break"
-
-
-    def update_tree(self, filters={}, keep_selection=False):
-        if keep_selection:
-            self.global_selection += self.tree.selection()
-
-        self.tree.yview_moveto(0.0)
-        self.tree.delete(*self.tree.get_children())
+    def insert(self,id,data):
+        try:
+            if not self.last_row%2:
+                self.tree.insert('',"end",id=id, values=data)
+            else:
+                self.tree.insert('',"end",id=id, values=data, tags=("colour"))
+            self.last_row+=1
         
-        lower = max(0, self.offset)
-        greater = min(self.total_items,lower+self.DISPLAYED_ITEMS)
-
-        r = self.fetch_records(lower, greater, filters)
-        if r.ok:
-            content = r.content
-            for idx,item in enumerate(content):
-                data = self.parent.get_data_to_insert(item)
-                
-                if not idx%2:
-                    self.tree.insert('',"end",id=item.id, values=data)
-                else:
-                    self.tree.insert('',"end",id=item.id, values=data, tags=("colour"))
-        else:
-            self.frame.after(100, lambda: ErrorWindow(r.content,self.parent.frame))
-        
-        for s in self.global_selection:
-            if self.tree.exists(s):
-                self.tree.selection_add(s)
-
-        if self.updating_tv_commands:
-            self.updating_tv_commands()
+        except Exception as e:
+            print(e)
 
     def selection(self):
         return self.tree.selection()
+    
+    def delete_content(self):
+        self.tree.delete(*self.tree.get_children())
+
+    def height(self):
+        self.tree.update()
+        return self.tree.winfo_height()
