@@ -25,7 +25,7 @@ class PaginationBar():
         self.prev_page.grid(row=0, column=0, padx=(0,5))
         self.prev_page.configure(state="disabled")
 
-        self.page_label = customtkinter.CTkLabel(pagination_frame, text=f"{self.current_page}/{last_page}", fg_color="transparent",text_color="black",font=('_',14))
+        self.page_label = customtkinter.CTkLabel(pagination_frame, text=f"{self.current_page} / {last_page}", fg_color="transparent",text_color="black",font=('_',14))
         self.page_label.grid(row=0,column=1)
         
         self.next_page = customtkinter.CTkButton(pagination_frame, text=">", corner_radius=5, anchor="center", height=20, width=20, font=('_',13), command=lambda: self.update(1))
@@ -61,7 +61,7 @@ class PaginationBar():
             self.next_page.configure(state="disabled")
             
 
-        self.page_label.configure(text=f"{self.current_page}/{last_page}")
+        self.page_label.configure(text=f"{self.current_page} / {last_page}")
 
         self.button_command()
 

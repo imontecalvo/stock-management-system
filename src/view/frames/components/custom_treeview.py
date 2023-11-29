@@ -63,7 +63,6 @@ class CustomTreeView():
             self.row_menu.post(event.x_root, event.y_root)
 
     def click_l_event(self):
-        # self.update_sep = True
         self.remove_selection()
 
     #Elimina seleccion y cierra menu en caso de estar abierto cuando se hace click en un la tabla
