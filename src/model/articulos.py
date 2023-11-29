@@ -13,6 +13,15 @@ class Articulo(db):
     precio_lista = Column(Integer())
     stock = Column(Integer(), default=0)
     pto_reposicion = Column(Integer())
+    iva = Column(Integer())
+    d1 = Column(Integer())
+    d2 = Column(Integer())
+    d3 = Column(Integer())
+    d4 = Column(Integer())
+    g1 = Column(Integer())
+    g2 = Column(Integer())
+    g3 = Column(Integer())
+    g4 = Column(Integer())
 
 
     def __init__(self, data):
@@ -27,6 +36,15 @@ class Articulo(db):
         self.precio_lista=data["precio_lista"]
         self.stock=data["stock"]
         self.pto_reposicion=data["pto_reposicion"]
+        self.iva = data["iva"]
+        self.d1 = data["d1"]
+        self.d2 = data["d2"]
+        self.d3 = data["d3"]
+        self.d4 = data["d4"]
+        self.g1 = data["g1"]
+        self.g2 = data["g2"]
+        self.g3 = data["g3"]
+        self.g4 = data["g4"]
         
     def update_data(self, data):
         self.codigo=data["codigo"]
@@ -37,3 +55,12 @@ class Articulo(db):
         self.precio_lista=data["precio_lista"]
         self.stock=data["stock"]
         self.pto_reposicion=data["pto_reposicion"]
+        self.iva = data["iva"]
+        self.d1 = data["d1"]
+        self.d2 = data["d2"]
+        self.d3 = data["d3"]
+        self.d4 = data["d4"]
+        self.g1 = data["g1"]
+        self.g2 = data["g2"]
+        self.g3 = data["g3"]
+        self.g4 = data["g4"]
