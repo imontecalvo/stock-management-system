@@ -10,6 +10,8 @@ from .components.error_window import ErrorWindow
 from .components.confirm_window import ConfirmWindow
 from .components.input_window import InputWindow
 from .components.new_articulo import NewArticulo
+from .components.pagination_bar import PaginationBar
+from .components.custom_treeview import CustomTreeView
 from ..constants import *
 from utils.response import Response
 
@@ -37,7 +39,8 @@ class ArticulosTab(TabFrame):
         #Titulo seccion
         headingLabel =  tk.Label(self.frame, text = 'Articulos', font=HEADING_FONT,bg=HEADING_COLOR, foreground=WHITE  )
         headingLabel.grid(row = 0,column= 0,sticky="w",pady=10, padx=10)
-        
+    
+
         #New item seccion
         frame1 = tk.Frame(self.frame, bg=HEADING_COLOR)
         frame1.grid(row=1,column=0, sticky="nw")
@@ -49,39 +52,39 @@ class ArticulosTab(TabFrame):
         import_items_button = customtkinter.CTkButton(frame1, text="Importar desde Excel", corner_radius=6, font=(DEFAULT_FONT,14))
         import_items_button.grid(row=0,column=1,padx=10, pady=10)
 
+        self.ask_confirmation = lambda: ConfirmWindow(self.frame, "¿Desea eliminar el/los artículo/s seleccionados?","Eliminar artículo",self.delete_articulos)
 
         #Filter seccion
         self.filters = ArticulosFilter(self)
 
         # Table Actions
-        actions_frame = tk.Frame(self.frame)
-        actions_frame.grid(row=4,column=0,sticky="ew")
-        actions_frame.columnconfigure(1, weight=1)
-        tk.Button(actions_frame, text="Seleccionar todo").grid(row=0,column=0,padx=10, pady=10)
+        self.actions_frame = tk.Frame(self.frame)
+        self.actions_frame.grid(row=4,column=0,sticky="ew")
+        self.actions_frame.columnconfigure(1, weight=1)
+        x = tk.Button(self.actions_frame, text="Seleccionar todo", command=lambda: print(self.tree.height()))
+        x.grid(row=0,column=0,padx=10, pady=10)
 
-        self.edit_button = customtkinter.CTkButton(actions_frame, text="Editar", command=self.open_edit_articulo_modal, state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=YELLOW, hover_color=YELLOW_HOVER, border_spacing=8, width=30)
+        self.edit_button = customtkinter.CTkButton(self.actions_frame, text="Editar", command=self.open_edit_articulo_modal, state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=YELLOW, hover_color=YELLOW_HOVER, border_spacing=8, width=30)
         self.edit_button.grid(row=0,column=2,padx=(0,20), pady=5)
 
-        ask_confirmation = lambda: ConfirmWindow(self.frame, "¿Desea eliminar el/los artículo/s seleccionados?","Eliminar artículo",self.delete_articulos)
+        # self.ask_confirmation = lambda: ConfirmWindow(self.frame, "¿Desea eliminar el/los artículo/s seleccionados?","Eliminar artículo",self.delete_articulos)
         
-        self.delete_sel_button = customtkinter.CTkButton(actions_frame, text="Eliminar selección", command= ask_confirmation,state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=RED, hover_color=RED_HOVER, border_spacing=8)
+        self.delete_sel_button = customtkinter.CTkButton(self.actions_frame, text="Eliminar selección", command= self.ask_confirmation,state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=RED, hover_color=RED_HOVER, border_spacing=8)
         self.delete_sel_button.grid(row=0,column=3,padx=10, pady=5)
 
-        #Menu Opciones de registro
-        self.row_menu = tk.Menu(root, tearoff=0)
-        self.row_menu.add_command(label="Editar", command=self.open_edit_articulo_modal)
-        self.row_menu.add_command(label="Eliminar", command=ask_confirmation)
-        self.row_menu.config(bg =WHITE,fg='black',activebackground=BLUE,activeforeground='white')
-
+    
         # Creacion de Tabla
-        self.generate_tree()
-        self.update_tree()
+        self.tree = self.create_tree()
+        self.page_bar = PaginationBar(self.actions_frame ,self.update_tree, self.number_of_records,self.tree)
+        self.frame.after(500, lambda: self.initialize_page_bar())
+        
 
         # Deseleccionar elementos al hacer click fuera 
-        self.frame.bind("<Button-1>", lambda event: self.remove_selection())
-        frame1.bind("<Button-1>", lambda event: self.remove_selection())
-        self.filters.filter_frame.bind("<Button-1>", lambda event: self.remove_selection())
-        actions_frame.bind("<Button-1>", lambda event: self.remove_selection())
+        self.frame.bind("<Button-1>", lambda event: self.tree.remove_selection())
+        frame1.bind("<Button-1>", lambda event: self.tree.remove_selection())
+        self.filters.filter_frame.bind("<Button-1>", lambda event: self.tree.remove_selection())
+        self.actions_frame.bind("<Button-1>", lambda event: self.tree.remove_selection())
+
     
 
     #Pone al frente el frame de Articulos y setea configuraciones de filas
@@ -98,102 +101,49 @@ class ArticulosTab(TabFrame):
                 total_width+=w
                 self.tree.separators[i].grid(row=1, column=0, ipady=300, pady=20, sticky='w', padx=(total_width,0))
 
-    #Genera tree view
-    def generate_tree(self):
-        tree_frame = tk.Frame(self.frame)
-        tree_frame.grid(row=3, column=0,sticky='nsew',rowspan=1, padx=5, pady=5)
+    def get_data_to_insert(self,a):
+        proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else self.MISSING_VALUE
+        marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else self.MISSING_VALUE
+        tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
+        return (a.id, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
+    
+    def initialize_page_bar(self):
+        self.page_bar.initialize()
+        self.page_bar.update(0)
 
+    def create_tree(self):
         columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
-        self.tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
-        self.tree.columns=columns
-        self.tree.separators=[]
-        self.update_sep = False
+        col_width = [100,None,None,None,None,None,None,None]
 
-        for i, c in enumerate(columns):
-            self.tree.grid_columnconfigure(i, weight=1)
-            self.tree.heading(c,text=c)
-            if c == "Codigo":
-                self.tree.column(c, width=100)
-
-            s = ttk.Separator(master=self.tree, orient='vertical', style='black.TSeparator', takefocus= 0)
-            self.tree.separators.append(s)
-
-        self.tree.grid(row=0,column=0, sticky='nsew',rowspan=1)
-        tree_frame.grid_rowconfigure(0, weight=1)
-        tree_frame.grid_columnconfigure(0, weight=1)
-        self.set_separator_col(columns,True)
+        tree = CustomTreeView(self, columns, col_width)
+        tree.grid(row=3, column=0,sticky='nsew',rowspan=1, padx=5, pady=5)
+        tree.add_row_menu([("Editar",self.open_edit_articulo_modal),("Eliminar",self.ask_confirmation)])
 
         #Habilita/Deshabilita boton de Eliminar Seleccion
-        self.tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
-
-        #Deselecciona registros al hacer click en un espacio en blanco de la tabla
-        self.tree.bind("<Button-1>", lambda event: self.click_l_event())
-
-        # Vincular el menú contextual al TreeView y habilitar la selección al clic derecho
-        self.tree.bind("<Button-3>", self.open_row_menu)
-
-        self.tree.bind("<ButtonRelease-1>", lambda event: self.update_separators())
-        self.tree.bind("<Motion>", lambda event: self.set_separator_col(columns))
-
-        style = ttk.Style()
-        style.configure("Treeview.Heading", background='light yellow')#--> color headings
-        self.tree.tag_configure('colour', background=LIGHT_GRAY2)
-
-        self.tree.after(300, lambda: self.set_separator_col(columns,True))
-
-        
-        #create CTk scrollbar
-        scrollbar = customtkinter.CTkScrollbar(tree_frame, command=self.tree.yview,fg_color="white")
-        scrollbar.grid(row=0, column=1, sticky="ns",pady=(20,0))
-        self.tree.configure(yscrollcommand=scrollbar.set)
-
-
+        tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
+        return tree
 
     #Recibe un diccionario de filtros y actualiza tree view con articulos filtrados
-    def update_tree(self, filters={}):
-        self.tree.delete(*self.tree.get_children())
-        r = self.controller.get_articulos(filters)
+    def update_tree(self):
+        filters = self.filters.get_values()
+        limit, offset = self.page_bar.get_limit_offset()
+        
+        self.tree.delete_content()
+        r = self.controller.get_articulos_in_range(limit, offset, filters)
         if r.ok:
             articulos = r.content
-            for idx,a in enumerate(articulos):
+            for a in articulos:
                 proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else self.MISSING_VALUE
                 marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else self.MISSING_VALUE
                 tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
                 data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
                 
-                if not idx%2:
-                    self.tree.insert('',"end",id=a.id, values=data)
-                else:
-                    self.tree.insert('',"end",id=a.id, values=data, tags=("colour"))
+                self.tree.insert(a.id, data)
         else:
             self.frame.after(100, lambda: ErrorWindow(r.content,self.root))
         
         self.delete_sel_button.configure(state="disabled")
         self.edit_button.configure(state="disabled")
-        
-    #Abre menu al hacer click derecho sobre un articulo en tree view
-    def open_row_menu(self, event):
-        # Obtener la fila seleccionada
-        item = self.tree.identify_row(event.y)
-        if item:
-            # Seleccionar manualmente la fila
-            self.tree.selection_set(item)
-
-            # Mostrar el menú contextual en las coordenadas del evento
-            self.row_menu.post(event.x_root, event.y_root)
-
-    def update_separators(self):
-        self.update_sep = False
-        self.set_separator_col(self.tree.columns, True)
-
-    def click_l_event(self):
-        self.update_sep = True
-        self.remove_selection()
-
-    #Elimina seleccion y cierra menu en caso de estar abierto cuando se hace click en un la tabla
-    def remove_selection(self):
-        self.row_menu.unpost()
-        self.tree.selection_remove(self.tree.selection())
 
     #Setea estados de botones: "Editar" y "Eliminar seleccion"
     #   - Editar: habilitado si hay 1 item seleccionado, sino deshabilitado
@@ -205,6 +155,18 @@ class ArticulosTab(TabFrame):
         
         self.delete_sel_button.configure(state=state_delete)
         self.edit_button.configure(state=state_edit)
+
+    def number_of_records(self):
+        filters = self.filters.get_values()
+        r = self.controller.get_no_articulos(filters)
+        if r.ok:
+            return r.content
+        else:
+            self.frame.after(100, lambda: ErrorWindow(r.content,self.root))
+            return 0
+
+    def new_filters(self):
+        self.page_bar.update(JUMP_2_FIRST_PAGE)
 
     #Recibe un diccionario con los valores de un articulo a agregar y lo añade a la base de datos
     #En caso de error, se muestra el mensaje en un pop up
@@ -234,7 +196,8 @@ class ArticulosTab(TabFrame):
                 field.delete(0, "end")
 
         if r.ok:
-            self.update_tree()
+            #self.update_tree()
+            self.page_bar.update(0)
         else:
             ErrorWindow(r.content, self.frame)
 
@@ -244,14 +207,15 @@ class ArticulosTab(TabFrame):
         id_articulos = tuple(int(x) for x in self.tree.selection())
         r = self.controller.delete_articulos_by_id(id_articulos)
         if r.ok:
-            self.update_tree()
+            # self.update_tree()
+            self.page_bar.update(0)
         else:
             ErrorWindow(r.content, self.root)
 
     #Abre modal para editar un articulo ya existente
     def open_edit_articulo_modal(self):
         articulo_id = self.tree.selection()[0]
-        articulo_data = self.tree.item(articulo_id,"values")
+        articulo_data = self.tree.tree.item(articulo_id,"values")
 
         # Crear una ventana modal personalizada
         modal = tk.Toplevel(self.root, bg=WHITE)
@@ -325,7 +289,8 @@ class ArticulosTab(TabFrame):
 
         r = self.controller.update_articulo(values)
         if r.ok:
-            self.update_tree()
+            # self.update_tree()
+            self.page_bar.update(0)
         else:
             ErrorWindow(r.content, self.root)    
         modal.destroy()

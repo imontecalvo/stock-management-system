@@ -27,13 +27,12 @@ class App():
         engine = create_engine(database_url)
 
         connection = engine.connect()
-        create_database_sql = "CREATE DATABASE IF NOT EXISTS Gestor;"
-        connection.execute(text(create_database_sql))
+        connection.execute(text(f"CREATE DATABASE IF NOT EXISTS {db_name};"))
+        connection.execute(text(f"USE {db_name};"))
 
         engine = create_engine(database_url+db_name)
         
         db.metadata.create_all(engine)
-
         return engine
 
     def run(self):

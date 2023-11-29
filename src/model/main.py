@@ -14,6 +14,7 @@ class Model():
         self.Session = sessionmaker(bind=self.engine)
         # self.Articulo = Articulo
     
+
     # Recibe diccionario con todos los campos de Articulo y lo inserta en la tabla de Articulo
     def add_articulo(self, data):
         try:
@@ -39,8 +40,8 @@ class Model():
             return Response(False, "ERROR: No se pudieron añadir todos los artículos.")
 
 
-    def __get_select_query(self,filters={}):
-        query = "SELECT * FROM Articulos"
+    def __where_closure_articulos(self,limit,offset, filters={}):
+        query = ""
         first_cond = True
         for k in filters.keys():
             if first_cond:
@@ -62,13 +63,27 @@ class Model():
 
             first_cond = False
         
-        query+=";"
+        if limit!=None and offset!=None:
+            query+=f" LIMIT {limit} OFFSET {offset}"
+        query+";"
         return query
 
-    # Recibe un diccionario con filtros válidos, construye la query SQL y retorna lista de Articulos
-    def get_articulos(self, filters={}):
-        query = self.__get_select_query(filters)
+    def get_no_articulos(self,filters={}):
+        base = "SELECT COUNT(*) FROM Articulos"
+        query = base+self.__where_closure_articulos(None,None, filters)
+        try:
+            session = self.Session()
+            res = session.execute(text(query))
+            session.close()
+            return Response(True, res.scalar())
+        except:
+            return Response(False,"ERROR: No se pudo obtener la cantidad de artículos.")
 
+    # Recibe un diccionario con filtros válidos, construye la query SQL y retorna lista de Articulos
+    def get_articulos(self, limit=None, offset=None, filters={}):
+        base = "SELECT * FROM Articulos"
+        query = base+self.__where_closure_articulos(limit, offset, filters)
+        
         try:
             session = self.Session()
             res = session.execute(text(query))
