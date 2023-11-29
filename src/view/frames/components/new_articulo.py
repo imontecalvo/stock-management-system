@@ -34,18 +34,23 @@ class NewArticulo():
 
         #Inputs
         code=self.entry_input(curr_row,"Codigo")
-        description=self.entry_input(curr_row+1,"Descripcion")
+        description=self.entry_input(curr_row+=1,"Descripcion")
         self.supplier, supplier_var=self.menu_input(curr_row+2,"Proveedor","Nuevo Proveedor", self.parent.add_proveedor)
         self.brand, brand_var=self.menu_input(curr_row+3,"Marca", "Nueva Marca", self.parent.add_marca)
         self.type, type_var=self.menu_input(curr_row+4,"Tipo", "Nuevo Tipo", self.parent.add_tipo)
-        stock=self.entry_input(curr_row+5,"Stock",True)
-        list_price=self.entry_input(curr_row+6,"Precio de lista",True)
-        rep_point=self.entry_input(curr_row+7, "Punto de reposicion",True)
+        list_price=self.entry_input(curr_row+5,"Precio de lista",True)
+        discount=self.multiple_entry_input(curr_row+6,"Descuentos (%)",True)
+        iva=self.entry_input(curr_row+7,"IVA",True)
+        cost=self.price_label(curr_row+8,"Precio de Costo")
+        revenues=self.multiple_entry_input(curr_row+9,"Ganancias (%)",True)
+        sell_price=self.price_label(curr_row+10,"Precio de Venta")
+        stock=self.entry_input(curr_row+11,"Stock",True)
+        rep_point=self.entry_input(curr_row+12, "Punto de reposicion",True)
 
-        fields_value=[code, description, supplier_var, brand_var, type_var, stock, list_price, rep_point]
+        fields_value=[code, description, supplier_var, brand_var, type_var, list_price, stock, rep_point]
 
         #Padding
-        curr_row+=8
+        curr_row+=13
         ttk.Frame(self.modal).grid(row=curr_row, column=0, pady=10)
 
         #Buttons
@@ -57,6 +62,7 @@ class NewArticulo():
         customtkinter.CTkButton(button_frame, text="Añadir", command=lambda: self.parent.add_articulo(fields_value), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=0, column=1, pady=10, padx=(0,10), sticky='e')
 
 
+    #Entry
     def entry_input(self, row, label, numeric=False):
         customtkinter.CTkLabel(self.modal, text=label, fg_color="transparent",text_color="black",font=('_',14)).grid(row=row,column=0, padx=10, pady=5, sticky='w')
         entry = customtkinter.CTkEntry(self.modal, fg_color="white", text_color="black", font=("_",13.5))
@@ -65,6 +71,37 @@ class NewArticulo():
             entry.configure(validate="key", validatecommand=(self.parent.root.validate_numeric_input, "%P"))
         return entry
     
+    #Entry multiple (4 inputs)
+    def multiple_entry_input(self, row, label, numeric=False):
+        customtkinter.CTkLabel(self.modal, text=label, fg_color="transparent",text_color="black",font=('_',14)).grid(row=row,column=0, padx=10, pady=5, sticky='w')
+
+        values_frame = customtkinter.CTkFrame(self.modal, fg_color="transparent")
+        values_frame.grid(row=row, column=1, padx=10, pady=7, columnspan=2,sticky='ew')
+
+        entries = []
+        for i in range(4):
+            entry = customtkinter.CTkEntry(values_frame, fg_color="white", text_color="black", font=("_",13.5),width=45)
+            if i == 0:
+                entry.grid(row=0, column=i, padx=(0, 10), sticky="w")
+            elif i == 3:
+                entry.grid(row=0, column=i, padx=(10, 0), sticky="e")
+            else:
+                entry.grid(row=0, column=i, padx=10)
+
+            if numeric:
+                entry.configure(validate="key", validatecommand=(self.parent.root.validate_numeric_input, "%P"))
+            entries.append(entry)
+
+        return entries
+
+    def price_label(self, row, label):
+        customtkinter.CTkLabel(self.modal, text=label, fg_color="transparent",text_color="black",font=('_',14)).grid(row=row,column=0, padx=10, pady=5, sticky='w')
+        entry = customtkinter.CTkLabel(self.modal, text="N/A",fg_color="white", text_color="black", font=("_",13.5))
+        entry.grid(row=row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
+        return entry
+    
+
+    #Menu desplegable
     def menu_input(self, row, label, title, command=None):
         customtkinter.CTkLabel(self.modal, text=label, fg_color="transparent",text_color="black",font=('_',14)).grid(row=row,column=0, padx=10, pady=5, sticky='w')
 
@@ -79,7 +116,7 @@ class NewArticulo():
         dropdown_menu.grid(row=row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
         return dropdown_menu, var
     
-
+    #Actualiza las opciones de los menus desplegables
     def update_options(self, field):
         options = self.parent.get_field_options(field)
         if field=="Proveedor":
