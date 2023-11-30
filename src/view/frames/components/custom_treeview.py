@@ -24,7 +24,7 @@ class CustomTreeView():
         self.tree.bind("<Button-3>", self.open_row_menu)
 
         style = ttk.Style()
-        style.configure("Treeview.Heading", background='light yellow')#--> color headings
+        style.configure("Treeview.Heading", background=LIGHT_YELLOW)#--> color headings
         self.tree.tag_configure('colour', background=LIGHT_GRAY2)
 
         self.DISPLAYED_ITEMS = 40  # Cantidad de elementos visibles a la vez

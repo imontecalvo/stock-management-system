@@ -38,14 +38,20 @@ class NewArticulo():
         self.supplier, supplier_var=self.menu_input(curr_row+2,"Proveedor","Nuevo Proveedor", self.parent.add_proveedor)
         self.brand, brand_var=self.menu_input(curr_row+3,"Marca", "Nueva Marca", self.parent.add_marca)
         self.type, type_var=self.menu_input(curr_row+4,"Tipo", "Nuevo Tipo", self.parent.add_tipo)
-        list_price=self.entry_input(curr_row+5,"Precio de lista",True)
-        discount=self.multiple_entry_input(curr_row+6,"Descuentos (%)",True)
-        iva=self.entry_input(curr_row+7,"IVA",True)
-        cost=self.price_label(curr_row+8,"Precio de Costo")
-        revenues=self.multiple_entry_input(curr_row+9,"Ganancias (%)",True)
-        sell_price=self.price_label(curr_row+10,"Precio de Venta")
-        stock=self.entry_input(curr_row+11,"Stock",True)
-        rep_point=self.entry_input(curr_row+12, "Punto de reposicion",True)
+
+        ttk.Separator(self.modal, orient="horizontal").grid(row=curr_row+5, column=0, columnspan=4, sticky="ew", pady=10)
+
+        list_price=self.entry_input(curr_row+6,"Precio de lista",True)
+        discount=self.multiple_entry_input(curr_row+7,"Descuentos (%)",True)
+        iva=self.entry_input(curr_row+8,"IVA",True)
+        cost=self.price_label(curr_row+9,"Precio de Costo")
+        revenues=self.multiple_entry_input(curr_row+10,"Ganancias (%)",True)
+        sell_price=self.price_label(curr_row+11,"Precio de Venta")
+
+        ttk.Separator(self.modal, orient="horizontal").grid(row=curr_row+12, column=0, columnspan=4, sticky="ew", pady=10)
+        
+        stock=self.entry_input(curr_row+13,"Stock",True)
+        rep_point=self.entry_input(curr_row+14, "Punto de reposicion",True)
 
         field_w_default_values = discount+revenues+[iva, stock, rep_point]
         for field in field_w_default_values:
@@ -64,7 +70,7 @@ class NewArticulo():
         fields_value=[code, description, supplier_var, brand_var, type_var, list_price, discount, iva, revenues, stock, rep_point]
 
         #Padding
-        curr_row+=13
+        curr_row+=15
         ttk.Frame(self.modal).grid(row=curr_row, column=0, pady=10)
 
         #Buttons
@@ -177,13 +183,13 @@ class NewArticulo():
             p2=tk.StringVar()
             p1.set(f"$ {round(total_cost, 2)}")
             p2.set(f"$ {round(total_sell, 2)}")
-            cost.configure(textvariable=p1)
-            sell_price.configure(textvariable=p2)
+            cost.configure(textvariable=p1, fg_color=LIGHT_YELLOW)
+            sell_price.configure(textvariable=p2, fg_color=LIGHT_YELLOW)
         else:
             p=tk.StringVar()
             p.set("N/A")
-            cost.configure(textvariable=p)
-            sell_price.configure(textvariable=p)
+            cost.configure(textvariable=p, fg_color="white")
+            sell_price.configure(textvariable=p, fg_color="white")
 
     def send_values(self, values):
         IDX_DISCOUNT = 6
