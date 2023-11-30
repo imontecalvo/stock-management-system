@@ -57,6 +57,9 @@ class NewArticulo():
         discount[1].bind("<FocusOut>",lambda event: self.limit_value(discount[1], 100))
         discount[2].bind("<FocusOut>",lambda event: self.limit_value(discount[2], 100))
         discount[3].bind("<FocusOut>",lambda event: self.limit_value(discount[3], 100))
+        ##Actualizar precios calculados
+        for field in discount+revenues+[list_price, iva]:
+            field.bind("<KeyRelease>", lambda event: self.update_prices(list_price, discount, iva, revenues, cost, sell_price))
 
         fields_value=[code, description, supplier_var, brand_var, type_var, list_price, discount, iva, revenues, stock, rep_point]
 
@@ -151,6 +154,32 @@ class NewArticulo():
         else:
             self.type.configure(values=options)
 
+    def update_prices(self, list_price, discount, iva, revenues, cost, sell_price):
+        list_price = list_price.get()
+        if list_price != "":
+            total_cost = float(list_price)
+            for d in discount:
+                d=d.get()
+                d = 0 if d == "" else float(d)
+                total_cost -= (total_cost*d/100)
+
+            iva = iva.get()
+            iva = 0 if iva=="" else float(iva)
+            total_cost += (total_cost*iva/100)
+
+            total_sell = total_cost
+            for g in revenues:
+                g=g.get()
+                g = 0 if g == "" else float(g)
+                total_sell += (total_sell*g/100)
+            
+            p1=tk.StringVar()
+            p2=tk.StringVar()
+            p1.set(f"$ {round(total_cost, 2)}")
+            p2.set(f"$ {round(total_sell, 2)}")
+            cost.configure(textvariable=p1)
+            sell_price.configure(textvariable=p2)
+            
     def send_values(self, values):
         IDX_DISCOUNT = 6
         IDX_REVENUES = 8
