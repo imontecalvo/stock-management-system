@@ -34,7 +34,7 @@ class NewArticulo():
 
         #Inputs
         code=self.entry_input(curr_row,"Codigo")
-        description=self.entry_input(curr_row+=1,"Descripcion")
+        description=self.entry_input(curr_row+1,"Descripcion")
         self.supplier, supplier_var=self.menu_input(curr_row+2,"Proveedor","Nuevo Proveedor", self.parent.add_proveedor)
         self.brand, brand_var=self.menu_input(curr_row+3,"Marca", "Nueva Marca", self.parent.add_marca)
         self.type, type_var=self.menu_input(curr_row+4,"Tipo", "Nuevo Tipo", self.parent.add_tipo)
@@ -47,7 +47,18 @@ class NewArticulo():
         stock=self.entry_input(curr_row+11,"Stock",True)
         rep_point=self.entry_input(curr_row+12, "Punto de reposicion",True)
 
-        fields_value=[code, description, supplier_var, brand_var, type_var, list_price, stock, rep_point]
+        field_w_default_values = discount+revenues+[iva, stock, rep_point]
+        for field in field_w_default_values:
+            field.configure(placeholder_text="0")
+
+        #Bindeos de eventos
+        ##Limitar valor maximo en porcentajes
+        discount[0].bind("<FocusOut>",lambda event: self.limit_value(discount[0], 100))
+        discount[1].bind("<FocusOut>",lambda event: self.limit_value(discount[1], 100))
+        discount[2].bind("<FocusOut>",lambda event: self.limit_value(discount[2], 100))
+        discount[3].bind("<FocusOut>",lambda event: self.limit_value(discount[3], 100))
+
+        fields_value=[code, description, supplier_var, brand_var, type_var, list_price, discount, iva, revenues, stock, rep_point]
 
         #Padding
         curr_row+=13
@@ -59,7 +70,7 @@ class NewArticulo():
 
         customtkinter.CTkButton(button_frame, text="Cancelar", command=lambda: self.modal.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=0, column=0, pady=10, sticky='e',padx=(0,10))
 
-        customtkinter.CTkButton(button_frame, text="Añadir", command=lambda: self.parent.add_articulo(fields_value), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=0, column=1, pady=10, padx=(0,10), sticky='e')
+        customtkinter.CTkButton(button_frame, text="Añadir", command=lambda: self.send_values(fields_value), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=0, column=1, pady=10, padx=(0,10), sticky='e')
 
 
     #Entry
@@ -80,6 +91,8 @@ class NewArticulo():
 
         entries = []
         for i in range(4):
+            # text = tk.StringVar(values_frame)
+            # text.set("0")
             entry = customtkinter.CTkEntry(values_frame, fg_color="white", text_color="black", font=("_",13.5),width=45)
             if i == 0:
                 entry.grid(row=0, column=i, padx=(0, 10), sticky="w")
@@ -116,6 +129,18 @@ class NewArticulo():
         dropdown_menu.grid(row=row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
         return dropdown_menu, var
     
+    def set_default_value(self, entry, default_value):
+        if entry.get() == "":
+            entry.delete(0, tk.END)
+            entry.insert(0, default_value)
+
+    def limit_value(self, field, max_value):
+        if field.get() != "":
+            value = int(field.get())
+            if value > max_value:
+                field.delete(0, tk.END)
+                field.insert(0, max_value)
+
     #Actualiza las opciones de los menus desplegables
     def update_options(self, field):
         options = self.parent.get_field_options(field)
@@ -125,5 +150,17 @@ class NewArticulo():
             self.brand.configure(values=options)
         else:
             self.type.configure(values=options)
+
+    def send_values(self, values):
+        IDX_DISCOUNT = 6
+        IDX_REVENUES = 8
+        for i in range(IDX_DISCOUNT,len(values)):
+            if i==IDX_DISCOUNT or i==IDX_REVENUES:
+                for value in values[i]:
+                    self.set_default_value(value, 0)
+            else:
+                self.set_default_value(values[i], 0)
+
+        self.parent.add_articulo(values)
 
             

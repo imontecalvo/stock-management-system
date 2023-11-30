@@ -123,6 +123,18 @@ class ArticulosTab(TabFrame):
         tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
         return tree
 
+    def calculate_prices(self,a):
+        total_cost = a.precio_lista
+        for dto in [a.d1,a.d2,a.d3,a.d4]:
+            total_cost -= (total_cost*dto/100)
+
+        total_cost += (total_cost*a.iva/100)
+
+        total_sell = total_cost
+        for gan in [a.g1,a.g2,a.g3,a.g4]:
+            total_sell += (total_sell*gan/100)
+        return total_cost, total_sell
+
     #Recibe un diccionario de filtros y actualiza tree view con articulos filtrados
     def update_tree(self):
         filters = self.filters.get_values()
@@ -137,7 +149,6 @@ class ArticulosTab(TabFrame):
                 marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else self.MISSING_VALUE
                 tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
                 data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
-                
                 self.tree.insert(a.id, data)
         else:
             self.frame.after(100, lambda: ErrorWindow(r.content,self.root))
@@ -184,14 +195,32 @@ class ArticulosTab(TabFrame):
             "id_marca":id_marca,
             "id_tipo":id_tipo,
             "precio_lista":int(fields[5].get()),
-            "stock":int(fields[6].get()),
-            "pto_reposicion":int(fields[7].get())
+            "d1":int(fields[6][0].get()),
+            "d2":int(fields[6][1].get()),
+            "d3":int(fields[6][2].get()),
+            "d4":int(fields[6][3].get()),
+            "iva":int(fields[7].get()),
+            "g1":int(fields[8][0].get()),
+            "g2":int(fields[8][1].get()),
+            "g3":int(fields[8][2].get()),
+            "g4":int(fields[8][3].get()),
+            "stock":int(fields[9].get()),
+            "pto_reposicion":int(fields[10].get())
         }
 
         r = self.controller.add_articulo(values) #TODO Chequear respuesta del controller y avisar si fallo
+
         for idx,field in enumerate(fields):
             if 2 <= idx <= 4:
                 field.set(self.MISSING_VALUE)
+            elif idx >= 6: 
+                if idx==6 or idx==8:
+                    for f in field:
+                        f.delete(0, "end")
+                        f.configure(placeholder_text="0")
+                else:
+                    field.delete(0, "end")
+                    field.configure(placeholder_text="0")
             else:
                 field.delete(0, "end")
 

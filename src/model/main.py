@@ -91,7 +91,7 @@ class Model():
 
             articulos = []
             for r in res:
-                data= {
+                data = {
                     "id":r[0],
                     "codigo":r[1],
                     "descripcion":r[2],
@@ -99,8 +99,17 @@ class Model():
                     "id_marca":r[4],
                     "id_tipo":r[5],
                     "precio_lista":r[6],
-                    "stock":r[7],
-                    "pto_reposicion":r[8]
+                    "d1":r[7],
+                    "d2":r[8],
+                    "d3":r[9],
+                    "d4":r[10],
+                    "iva":r[11],
+                    "g1":r[12],
+                    "g2":r[13],
+                    "g3":r[14],
+                    "g4":r[15],
+                    "stock":r[16],
+                    "pto_reposicion":r[17]
                 }
                 articulos.append(Articulo(data))
 
