@@ -179,7 +179,12 @@ class NewArticulo():
             p2.set(f"$ {round(total_sell, 2)}")
             cost.configure(textvariable=p1)
             sell_price.configure(textvariable=p2)
-            
+        else:
+            p=tk.StringVar()
+            p.set("N/A")
+            cost.configure(textvariable=p)
+            sell_price.configure(textvariable=p)
+
     def send_values(self, values):
         IDX_DISCOUNT = 6
         IDX_REVENUES = 8
