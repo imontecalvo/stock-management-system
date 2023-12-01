@@ -23,7 +23,6 @@ class ArticulosTab(TabFrame):
         super().__init__(root, controller)
 
         #Constantes
-        self.MISSING_VALUE = "Sin especificar"
         self.NUMERIC_INPUTS = ["Stock","Precio de lista", "Punto de reposicion"]
 
         #Configuracion de frame
@@ -45,7 +44,9 @@ class ArticulosTab(TabFrame):
         frame1 = tk.Frame(self.frame, bg=HEADING_COLOR)
         frame1.grid(row=1,column=0, sticky="nw")
 
-        new_item_button = customtkinter.CTkButton(frame1, text="Nuevo Artículo",command=lambda: NewArticulo(self), corner_radius=6, font=(DEFAULT_FONT,14))
+        self.new_articulo_modal = NewArticulo(self)
+
+        new_item_button = customtkinter.CTkButton(frame1, text="Nuevo Artículo",command=self.new_articulo_modal.show, corner_radius=6, font=(DEFAULT_FONT,14))
         new_item_button.grid(row=0,column=0,padx=10, pady=10)
 
 
@@ -85,6 +86,8 @@ class ArticulosTab(TabFrame):
         self.filters.filter_frame.bind("<Button-1>", lambda event: self.tree.remove_selection())
         self.actions_frame.bind("<Button-1>", lambda event: self.tree.remove_selection())
 
+
+
     
 
     #Pone al frente el frame de Articulos y setea configuraciones de filas
@@ -102,9 +105,9 @@ class ArticulosTab(TabFrame):
                 self.tree.separators[i].grid(row=1, column=0, ipady=300, pady=20, sticky='w', padx=(total_width,0))
 
     def get_data_to_insert(self,a):
-        proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else self.MISSING_VALUE
-        marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else self.MISSING_VALUE
-        tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
+        proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else MISSING_VALUE
+        marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else MISSING_VALUE
+        tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else MISSING_VALUE
         return (a.id, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
     
     def initialize_page_bar(self):
@@ -145,9 +148,9 @@ class ArticulosTab(TabFrame):
         if r.ok:
             articulos = r.content
             for a in articulos:
-                proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else self.MISSING_VALUE
-                marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else self.MISSING_VALUE
-                tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else self.MISSING_VALUE
+                proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else MISSING_VALUE
+                marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else MISSING_VALUE
+                tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else MISSING_VALUE
                 data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
                 self.tree.insert(a.id, data)
         else:
@@ -182,57 +185,34 @@ class ArticulosTab(TabFrame):
     #Recibe un diccionario con los valores de un articulo a agregar y lo añade a la base de datos
     #En caso de error, se muestra el mensaje en un pop up
     def add_articulo(self, fields):
-        #TODO Chequear tipos de datos y Nulls
-
-        id_proveedor = None if fields[2].get()==self.MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2].get())
-        id_marca = None if fields[3].get()==self.MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3].get())
-        id_tipo = None if fields[4].get()==self.MISSING_VALUE else self.get_id_from_value(self.tipos, fields[4].get())
+        id_proveedor = None if fields[2]==MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2])
+        id_marca = None if fields[3]==MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3])
+        id_tipo = None if fields[4]==MISSING_VALUE else self.get_id_from_value(self.tipos, fields[4])
 
         values = {
-            "codigo":fields[0].get(),
-            "descripcion":fields[1].get(),
+            "codigo":fields[0],
+            "descripcion":fields[1],
             "id_proveedor":id_proveedor,
             "id_marca":id_marca,
             "id_tipo":id_tipo,
-            "precio_lista":int(fields[5].get()),
-            "d1":int(fields[6][0].get()),
-            "d2":int(fields[6][1].get()),
-            "d3":int(fields[6][2].get()),
-            "d4":int(fields[6][3].get()),
-            "iva":int(fields[7].get()),
-            "g1":int(fields[8][0].get()),
-            "g2":int(fields[8][1].get()),
-            "g3":int(fields[8][2].get()),
-            "g4":int(fields[8][3].get()),
-            "stock":int(fields[9].get()),
-            "pto_reposicion":int(fields[10].get())
+            "precio_lista":int(fields[5]),
+            "d1":int(fields[6][0]),
+            "d2":int(fields[6][1]),
+            "d3":int(fields[6][2]),
+            "d4":int(fields[6][3]),
+            "iva":int(fields[7]),
+            "g1":int(fields[8][0]),
+            "g2":int(fields[8][1]),
+            "g3":int(fields[8][2]),
+            "g4":int(fields[8][3]),
+            "stock":int(fields[9]),
+            "pto_reposicion":int(fields[10])
         }
 
-        r = self.controller.add_articulo(values) #TODO Chequear respuesta del controller y avisar si fallo
-
-        #Reestablecer campos de modal, TODO: Abstraerlo y que sea un metodo del modal NewArticulo (para eso tiene que permanecer en memoria)
-        #TODO: Cuando haga abstraccion, modificar el for de send_values hasta len() y no len()-2, no necesito pasar los ultimos 2 campos
-        #Tambien modificar el for de aca abajo, el -2 no va mas
-        for idx,field in enumerate(fields[:-2]):
-            if 2 <= idx <= 4:
-                field.set(self.MISSING_VALUE)
-            elif idx >= 6: 
-                if idx==6 or idx==8:
-                    for f in field:
-                        f.delete(0, "end")
-                        f.configure(placeholder_text="0")
-                else:
-                    field.delete(0, "end")
-                    field.configure(placeholder_text="0")
-            else:
-                field.delete(0, "end")
-        p=tk.StringVar(value="N/A")
-        fields[-2].configure(textvariable=p, fg_color="white")
-        fields[-1].configure(textvariable=p, fg_color="white")
-
+        r = self.controller.add_articulo(values)
 
         if r.ok:
-            #self.update_tree()
+            self.new_articulo_modal.reset()
             self.page_bar.update(0)
         else:
             ErrorWindow(r.content, self.frame)
@@ -307,9 +287,9 @@ class ArticulosTab(TabFrame):
     #En caso de error, muestra el mensaje en un pop up
     def update_articulo(self, id, fields, modal):
         #TODO Chequear tipos de datos y Nulls
-        id_proveedor = None if fields[2].get()==self.MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2].get())
-        id_marca = None if fields[3].get()==self.MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3].get())
-        id_tipo = None if fields[4].get()==self.MISSING_VALUE else self.get_id_from_value(self.tipos, fields[4].get())
+        id_proveedor = None if fields[2].get()==MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2].get())
+        id_marca = None if fields[3].get()==MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3].get())
+        id_tipo = None if fields[4].get()==MISSING_VALUE else self.get_id_from_value(self.tipos, fields[4].get())
 
         values = {
             "id":int(id),
@@ -372,11 +352,11 @@ class ArticulosTab(TabFrame):
     #Concatena el valor "Sin especificar" a la lista de valores extraida de la base de datos
     def get_field_options(self, field):
             if field == "Proveedor":
-                return [self.MISSING_VALUE]+list(self.proveedores.values())
+                return [MISSING_VALUE]+list(self.proveedores.values())
             elif field == "Marca":
-                return [self.MISSING_VALUE]+list(self.marcas.values())
+                return [MISSING_VALUE]+list(self.marcas.values())
             elif field == "Tipo":
-                return [self.MISSING_VALUE]+list(self.tipos.values())
+                return [MISSING_VALUE]+list(self.tipos.values())
             return ["error"]
     
     #Dado un diccionario y un valor, obtiene la clave
@@ -436,7 +416,6 @@ class ArticulosTab(TabFrame):
             return Response(True)
         return Response(False, "ERROR: Tipo de producto ya existente.")
         
-
 
 """
 root

@@ -7,25 +7,18 @@ import customtkinter
 from ..components.input_window import InputWindow
 from ...constants import *
 
+IDX_DISCOUNT = 6
+IDX_REVENUES = 8
+
 class NewArticulo():
     def __init__(self, parent):
         self.parent=parent
         # Crear una ventana modal personalizada
         self.modal = tk.Toplevel(parent.root, bg=WHITE)
+        self.hide()
+        self.modal.protocol("WM_DELETE_WINDOW", self.hide)
         self.modal.title("Nuevo Artículo")
-
-        # Config
-        ventana_principal_ancho = parent.root.winfo_width()
-        ventana_principal_alto = parent.root.winfo_height()
-
-        modal_ancho = 350
-        modal_alto = 600
-
-        x = (ventana_principal_ancho//2) - (modal_ancho//2)
-        y = (ventana_principal_alto//2)-(modal_alto//2)
-        self.geometry = (x,y)
-        self.modal.after(500, lambda: self.modal.geometry(f"+{x}+{y}"))
-
+        
         # Contenido
         ttk.Frame(self.modal).grid(row=0, column=0, pady=10)
         fields = ["Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion"] #TODO Pedir campos al modelo
@@ -44,9 +37,9 @@ class NewArticulo():
         list_price=self.entry_input(curr_row+6,"Precio de lista",True)
         discount=self.multiple_entry_input(curr_row+7,"Descuentos (%)",True)
         iva=self.entry_input(curr_row+8,"IVA",True)
-        cost=self.price_label(curr_row+9,"Precio de Costo")
+        self.cost=self.price_label(curr_row+9,"Precio de Costo")
         revenues=self.multiple_entry_input(curr_row+10,"Ganancias (%)",True)
-        sell_price=self.price_label(curr_row+11,"Precio de Venta")
+        self.sell_price=self.price_label(curr_row+11,"Precio de Venta")
 
         ttk.Separator(self.modal, orient="horizontal").grid(row=curr_row+12, column=0, columnspan=4, sticky="ew", pady=10)
         
@@ -65,9 +58,9 @@ class NewArticulo():
         discount[3].bind("<FocusOut>",lambda event: self.limit_value(discount[3], 100))
         ##Actualizar precios calculados
         for field in discount+revenues+[list_price, iva]:
-            field.bind("<KeyRelease>", lambda event: self.update_prices(list_price, discount, iva, revenues, cost, sell_price))
+            field.bind("<KeyRelease>", lambda event: self.update_prices(list_price, discount, iva, revenues, self.cost, self.sell_price))
 
-        fields_value=[code, description, supplier_var, brand_var, type_var, list_price, discount, iva, revenues, stock, rep_point,cost,sell_price]
+        self.fields_value=[code, description, supplier_var, brand_var, type_var, list_price, discount, iva, revenues, stock, rep_point]
 
         #Padding
         curr_row+=15
@@ -83,7 +76,7 @@ class NewArticulo():
 
         customtkinter.CTkButton(button_frame, text="Cancelar", command=lambda: self.modal.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=0, column=0, pady=10, sticky='e',padx=(0,10))
 
-        customtkinter.CTkButton(button_frame, text="Añadir", command=lambda: self.send_values(fields_value), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=0, column=1, pady=10, padx=(0,10), sticky='e')
+        customtkinter.CTkButton(button_frame, text="Añadir", command=lambda: self.send_values(), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=0, column=1, pady=10, padx=(0,10), sticky='e')
 
 
     #Entry
@@ -193,35 +186,77 @@ class NewArticulo():
             cost.configure(textvariable=p, fg_color="white")
             sell_price.configure(textvariable=p, fg_color="white")
 
-    def send_values(self, values):
-        IDX_DISCOUNT = 6
-        IDX_REVENUES = 8
-
-        if self.check_values(values):
-            for i in range(IDX_DISCOUNT,len(values)-2):
-                if i==IDX_DISCOUNT or i==IDX_REVENUES:
-                    for value in values[i]:
-                        self.set_default_value(value, 0)
+    #Chequea que los campos sean validos. Luego obtiene los valores de los campos, en caso de ser necesario
+    #establece el valor por defecto, y los envía a la ventana de Articulos
+    def send_values(self):
+        if self.check_values():
+            values = []
+            for i in range(len(self.fields_value)):
+                #Son los campos que tienen valores por defecto
+                if i >= IDX_DISCOUNT:
+                    if i==IDX_DISCOUNT or i==IDX_REVENUES:
+                        v=[0 if x.get()=="" else x.get() for x in self.fields_value[i]]
+                    else:
+                        v= 0 if self.fields_value[i].get()=="" else self.fields_value[i].get()
                 else:
-                    self.set_default_value(values[i], 0)
-
+                    v=self.fields_value[i].get()
+                # print(v)
+                values.append(v)
+            # print("values ", values)
             self.parent.add_articulo(values)
-        
+    
 
-    def check_values(self, values):
-        if values[0].get()=="":
+    def check_values(self):
+        if self.fields_value[0].get()=="":
             self.error_label.configure(text="ERROR: El campo 'Codigo' es obligatorio.")
             return False
-        elif values[1].get()=="":
+        elif self.fields_value[1].get()=="":
             self.error_label.configure(text="ERROR: El campo 'Descripcion' es obligatorio.")
             return False
-        elif values[5].get()=="":
+        elif self.fields_value[5].get()=="":
             self.error_label.configure(text="ERROR: El campo 'Precio de lista' es obligatorio.")
             return False
-        elif self.parent.controller.exist_articulo_by_code(values[0].get()).content:
+        elif self.parent.controller.exist_articulo_by_code(self.fields_value[0].get()).content:
             self.error_label.configure(text="ERROR: Ya existe un articulo con ese codigo.")
             return False
         else:
             self.error_label.configure(text="")
             return True
+        
+    # Config
+    def config_geometry(self):
+        ventana_principal_ancho = self.parent.root.winfo_width()
+        ventana_principal_alto = self.parent.root.winfo_height()
+
+        modal_ancho = 350
+        modal_alto = 600
+        x = (ventana_principal_ancho//2) - (modal_ancho//2)
+        y = (ventana_principal_alto//2)-(modal_alto//2)
+        self.geometry = (x,y)
+        self.modal.geometry(f"+{x}+{y}")
+
+    def show(self):
+        self.config_geometry()
+        self.modal.deiconify()
+
+    def hide(self):
+        self.modal.withdraw()
+
+    def reset(self):
+        for idx,field in enumerate(self.fields_value):
+            if 2 <= idx <= 4:
+                field.set(MISSING_VALUE)
+            elif idx >= 6: 
+                if idx==6 or idx==8:
+                    for f in field:
+                        f.delete(0, "end")
+                        f.configure(placeholder_text="0")
+                else:
+                    field.delete(0, "end")
+                    field.configure(placeholder_text="0")
+            else:
+                field.delete(0, "end")
+        p=tk.StringVar(value="N/A")
+        self.cost.configure(textvariable=p, fg_color="white")
+        self.sell_price.configure(textvariable=p, fg_color="white")
             
