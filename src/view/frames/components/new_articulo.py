@@ -67,11 +67,15 @@ class NewArticulo():
         for field in discount+revenues+[list_price, iva]:
             field.bind("<KeyRelease>", lambda event: self.update_prices(list_price, discount, iva, revenues, cost, sell_price))
 
-        fields_value=[code, description, supplier_var, brand_var, type_var, list_price, discount, iva, revenues, stock, rep_point]
+        fields_value=[code, description, supplier_var, brand_var, type_var, list_price, discount, iva, revenues, stock, rep_point,cost,sell_price]
 
         #Padding
         curr_row+=15
-        ttk.Frame(self.modal).grid(row=curr_row, column=0, pady=10)
+        # ttk.Frame(self.modal).grid(row=curr_row, column=0, pady=(10,0))
+
+        #Error label
+        self.error_label = customtkinter.CTkLabel(self.modal, text="", fg_color="transparent",text_color=RED,font=(DEFAULT_FONT,13.5))
+        self.error_label.grid(row=curr_row, column=0, pady=(8,8), padx=20, columnspan=4, sticky="we")
 
         #Buttons
         button_frame = tk.Frame(self.modal, bg=WHITE)
@@ -192,13 +196,32 @@ class NewArticulo():
     def send_values(self, values):
         IDX_DISCOUNT = 6
         IDX_REVENUES = 8
-        for i in range(IDX_DISCOUNT,len(values)):
-            if i==IDX_DISCOUNT or i==IDX_REVENUES:
-                for value in values[i]:
-                    self.set_default_value(value, 0)
-            else:
-                self.set_default_value(values[i], 0)
 
-        self.parent.add_articulo(values)
+        if self.check_values(values):
+            for i in range(IDX_DISCOUNT,len(values)-2):
+                if i==IDX_DISCOUNT or i==IDX_REVENUES:
+                    for value in values[i]:
+                        self.set_default_value(value, 0)
+                else:
+                    self.set_default_value(values[i], 0)
 
+            self.parent.add_articulo(values)
+        
+
+    def check_values(self, values):
+        if values[0].get()=="":
+            self.error_label.configure(text="ERROR: El campo 'Codigo' es obligatorio.")
+            return False
+        elif values[1].get()=="":
+            self.error_label.configure(text="ERROR: El campo 'Descripcion' es obligatorio.")
+            return False
+        elif values[5].get()=="":
+            self.error_label.configure(text="ERROR: El campo 'Precio de lista' es obligatorio.")
+            return False
+        elif self.parent.controller.exist_articulo_by_code(values[0].get()).content:
+            self.error_label.configure(text="ERROR: Ya existe un articulo con ese codigo.")
+            return False
+        else:
+            self.error_label.configure(text="")
+            return True
             

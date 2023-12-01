@@ -79,6 +79,16 @@ class Model():
         except:
             return Response(False,"ERROR: No se pudo obtener la cantidad de artículos.")
 
+    def exist_articulo_by_code(self, code):
+        query = f"SELECT COUNT(*) FROM Articulos WHERE codigo='{code}';"
+        try:
+            session = self.Session()
+            res = session.execute(text(query))
+            session.close()
+            return Response(True, res.scalar())
+        except:
+            return Response(False,"ERROR: No se pudo verificar la existencia del artículo.")
+
     # Recibe un diccionario con filtros válidos, construye la query SQL y retorna lista de Articulos
     def get_articulos(self, limit=None, offset=None, filters={}):
         base = "SELECT * FROM Articulos"

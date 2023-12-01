@@ -210,7 +210,10 @@ class ArticulosTab(TabFrame):
 
         r = self.controller.add_articulo(values) #TODO Chequear respuesta del controller y avisar si fallo
 
-        for idx,field in enumerate(fields):
+        #Reestablecer campos de modal, TODO: Abstraerlo y que sea un metodo del modal NewArticulo (para eso tiene que permanecer en memoria)
+        #TODO: Cuando haga abstraccion, modificar el for de send_values hasta len() y no len()-2, no necesito pasar los ultimos 2 campos
+        #Tambien modificar el for de aca abajo, el -2 no va mas
+        for idx,field in enumerate(fields[:-2]):
             if 2 <= idx <= 4:
                 field.set(self.MISSING_VALUE)
             elif idx >= 6: 
@@ -223,6 +226,10 @@ class ArticulosTab(TabFrame):
                     field.configure(placeholder_text="0")
             else:
                 field.delete(0, "end")
+        p=tk.StringVar(value="N/A")
+        fields[-2].configure(textvariable=p, fg_color="white")
+        fields[-1].configure(textvariable=p, fg_color="white")
+
 
         if r.ok:
             #self.update_tree()

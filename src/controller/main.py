@@ -24,6 +24,9 @@ class Controller():
         filters = self.check_filters_articulos(filters)
         return self.model.get_no_articulos(filters)
 
+    def exist_articulo_by_code(self, code):
+        return self.model.exist_articulo_by_code(code)
+
     def add_articulo(self, articulo):
         return self.model.add_articulo(articulo)
 
