@@ -19,12 +19,12 @@ class NewArticulo():
         ventana_principal_alto = parent.root.winfo_height()
 
         modal_ancho = 350
-        modal_alto = 400
+        modal_alto = 600
 
         x = (ventana_principal_ancho//2) - (modal_ancho//2)
         y = (ventana_principal_alto//2)-(modal_alto//2)
         self.geometry = (x,y)
-        self.modal.geometry(f"+{x}+{y}")
+        self.modal.after(500, lambda: self.modal.geometry(f"+{x}+{y}"))
 
         # Contenido
         ttk.Frame(self.modal).grid(row=0, column=0, pady=10)
@@ -100,8 +100,6 @@ class NewArticulo():
 
         entries = []
         for i in range(4):
-            # text = tk.StringVar(values_frame)
-            # text.set("0")
             entry = customtkinter.CTkEntry(values_frame, fg_color="white", text_color="black", font=("_",13.5),width=45)
             if i == 0:
                 entry.grid(row=0, column=i, padx=(0, 10), sticky="w")
