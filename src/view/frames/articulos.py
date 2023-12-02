@@ -10,6 +10,7 @@ from .components.error_window import ErrorWindow
 from .components.confirm_window import ConfirmWindow
 from .components.input_window import InputWindow
 from .components.new_articulo import NewArticulo
+from .components.edit_articulo import EditArticulo
 from .components.pagination_bar import PaginationBar
 from .components.custom_treeview import CustomTreeView
 from ..constants import *
@@ -45,6 +46,7 @@ class ArticulosTab(TabFrame):
         frame1.grid(row=1,column=0, sticky="nw")
 
         self.new_articulo_modal = NewArticulo(self)
+        self.edit_articulo_modal = EditArticulo(self)
 
         new_item_button = customtkinter.CTkButton(frame1, text="Nuevo Artículo",command=self.new_articulo_modal.show, corner_radius=6, font=(DEFAULT_FONT,14))
         new_item_button.grid(row=0,column=0,padx=10, pady=10)
@@ -231,85 +233,48 @@ class ArticulosTab(TabFrame):
     #Abre modal para editar un articulo ya existente
     def open_edit_articulo_modal(self):
         articulo_id = self.tree.selection()[0]
-        articulo_data = self.tree.tree.item(articulo_id,"values")
-
-        # Crear una ventana modal personalizada
-        modal = tk.Toplevel(self.root, bg=WHITE)
-        modal.title("Editar Artículo")
-
-        # Config
-        ventana_principal_ancho = self.root.winfo_width()
-        ventana_principal_alto = self.root.winfo_height()
-
-        modal_ancho = 300
-        modal_alto = 200
-
-        x = (ventana_principal_ancho//2) - (modal_ancho//2)
-        y = (ventana_principal_alto//2)-(modal_alto//2)
-
-        modal.geometry(f"+{x}+{y}")
-
-        # Contenido
-        ttk.Frame(modal).grid(row=0, column=0, pady=5)
-        fields = ["Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion"] #TODO Pedir campos al modelo
-        fields_value = []
-        curr_row = 1
-
-        for idx, field in enumerate(fields):
-            customtkinter.CTkLabel(modal, text=field, fg_color="transparent",text_color="black",font=('_',14)).grid(row=curr_row,column=0, padx=10, pady=5, sticky='w')
-
-            if field in ["Proveedor","Marca","Tipo"]:
-                var = tk.StringVar(modal)
-                var.set(articulo_data[idx])
-                options = self.get_field_options(field)
-                dropdown_menu = customtkinter.CTkOptionMenu(modal,dynamic_resizing=False, width=220, values=options,font=('_',14), dropdown_font=(DEFAULT_FONT,14),variable=var)
-                dropdown_menu.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
-                fields_value.append(var)
-                customtkinter.CTkButton(modal, text="+", corner_radius=5, anchor="center", height=20, width=20, font=('_',13) ).grid(row=curr_row, column=3, pady=7, padx=(0,10), sticky='e')
-
-            else:
-                entry = customtkinter.CTkEntry(modal, textvariable=tk.StringVar(value=articulo_data[idx]), fg_color="white", text_color="black", font=("_",13.5))
-                entry.grid(row=curr_row,column=1, padx=10, pady=7, columnspan=2,sticky='ew')
-                if field in self.NUMERIC_INPUTS:
-                    entry.configure(validate="key", validatecommand=(self.root.validate_numeric_input, "%P"))
-                fields_value.append(entry)
-            curr_row+=1
-        
-        ttk.Frame(modal).grid(row=curr_row, column=0, pady=5)
-
-        # Botón para aceptar y cerrar el modal
-        customtkinter.CTkButton(modal, text="Cancelar", command=lambda: modal.destroy(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=curr_row+1, column=1, pady=10, sticky='e',padx=(0,10))
-
-        customtkinter.CTkButton(modal, text="Guardar", command=lambda: self.update_articulo(articulo_id,fields_value, modal), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=curr_row+1, column=2, pady=10, padx=(0,10), sticky='e')
-
+        r = self.controller.get_articulo_by_id(articulo_id)
+        if r.ok:
+            articulo = r.content
+            self.edit_articulo_modal.show(articulo)
+        else:
+            ErrorWindow(r.content, self.frame)
+            return
 
     #Recibe id y campos del articulo a editar y lo edita en la base de datos, luego cierra modal
     #En caso de error, muestra el mensaje en un pop up
-    def update_articulo(self, id, fields, modal):
-        #TODO Chequear tipos de datos y Nulls
-        id_proveedor = None if fields[2].get()==MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2].get())
-        id_marca = None if fields[3].get()==MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3].get())
-        id_tipo = None if fields[4].get()==MISSING_VALUE else self.get_id_from_value(self.tipos, fields[4].get())
+    def update_articulo(self, id, fields):
+        id_proveedor = None if fields[2]==MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2])
+        id_marca = None if fields[3]==MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3])
+        id_tipo = None if fields[4]==MISSING_VALUE else self.get_id_from_value(self.tipos, fields[4])
 
         values = {
-            "id":int(id),
-            "codigo":fields[0].get(),
-            "descripcion":fields[1].get(),
+            "id":id,
+            "codigo":fields[0],
+            "descripcion":fields[1],
             "id_proveedor":id_proveedor,
             "id_marca":id_marca,
             "id_tipo":id_tipo,
-            "precio_lista":int(fields[5].get()),
-            "stock":int(fields[6].get()),
-            "pto_reposicion":int(fields[7].get())
+            "precio_lista":int(fields[5]),
+            "d1":int(fields[6][0]),
+            "d2":int(fields[6][1]),
+            "d3":int(fields[6][2]),
+            "d4":int(fields[6][3]),
+            "iva":int(fields[7]),
+            "g1":int(fields[8][0]),
+            "g2":int(fields[8][1]),
+            "g3":int(fields[8][2]),
+            "g4":int(fields[8][3]),
+            "stock":int(fields[9]),
+            "pto_reposicion":int(fields[10])
         }
 
         r = self.controller.update_articulo(values)
         if r.ok:
-            # self.update_tree()
-            self.page_bar.update(0)
+            self.page_bar.update(SAME_PAGE)
         else:
             ErrorWindow(r.content, self.root)    
-        modal.destroy()
+
 
     #Obtiene la lista de proveedores de la base de datos
     def get_proveedores(self):

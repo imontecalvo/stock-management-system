@@ -9,14 +9,14 @@ from ...constants import *
 
 
 
-class NewArticulo():
+class EditArticulo():
     def __init__(self, parent):
         self.parent=parent
         # Crear una ventana modal personalizada
         self.modal = tk.Toplevel(parent.root, bg=WHITE)
         self.hide()
         self.modal.protocol("WM_DELETE_WINDOW", self.hide)
-        self.modal.title("Nuevo Artículo")
+        self.modal.title("Editar Artículo")
         
         # Contenido
         ttk.Frame(self.modal).grid(row=0, column=0, pady=10)
@@ -73,7 +73,7 @@ class NewArticulo():
 
         customtkinter.CTkButton(button_frame, text="Cancelar", command=lambda: self.hide(), corner_radius=6, font=('_',15), fg_color=RED, hover_color=RED_HOVER, border_spacing=5, width=20).grid(row=0, column=0, pady=10, sticky='e',padx=(0,10))
 
-        customtkinter.CTkButton(button_frame, text="Añadir", command=lambda: self.send_values(), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=0, column=1, pady=10, padx=(0,10), sticky='e')
+        customtkinter.CTkButton(button_frame, text="Guardar", command=lambda: self.send_values(), corner_radius=6, font=('_',15), border_spacing=5, width=80 ).grid(row=0, column=1, pady=10, padx=(0,10), sticky='e')
 
 
     #Entry
@@ -197,10 +197,8 @@ class NewArticulo():
                         v= 0 if self.fields_value[i].get()=="" else self.fields_value[i].get()
                 else:
                     v=self.fields_value[i].get()
-                # print(v)
                 values.append(v)
-            # print("values ", values)
-            self.parent.add_articulo(values)
+            self.parent.update_articulo(self.current_id, values)
     
 
     def check_values(self):
@@ -212,9 +210,6 @@ class NewArticulo():
             return False
         elif self.fields_value[IDX_LIST_PRICE].get()=="":
             self.error_label.configure(text="ERROR: El campo 'Precio de lista' es obligatorio.")
-            return False
-        elif self.parent.controller.exist_articulo_by_code(self.fields_value[IDX_CODE].get()).content:
-            self.error_label.configure(text="ERROR: Ya existe un articulo con ese codigo.")
             return False
         else:
             self.error_label.configure(text="")
@@ -232,28 +227,42 @@ class NewArticulo():
         self.geometry = (x,y)
         self.modal.geometry(f"+{x}+{y}")
 
-    def show(self):
+    def show(self,articulo):
         self.config_geometry()
+        self.current_id=articulo.id
+        self.reset(articulo)
         self.modal.deiconify()
 
     def hide(self):
         self.modal.withdraw()
 
-    def reset(self):
-        for idx,field in enumerate(self.fields_value):
-            if IDX_SUPPLIER <= idx <= IDX_TYPE:
-                field.set(MISSING_VALUE)
-            elif idx >= IDX_DISCOUNT: 
-                if idx==IDX_DISCOUNT or idx==IDX_REVENUES:
-                    for f in field:
-                        f.delete(0, "end")
-                        f.configure(placeholder_text="0")
-                else:
-                    field.delete(0, "end")
-                    field.configure(placeholder_text="0")
-            else:
+    def reset(self,articulo):
+        for idx, field in enumerate(self.fields_value):
+            if idx not in [IDX_SUPPLIER, IDX_BRAND, IDX_TYPE, IDX_DISCOUNT, IDX_REVENUES]:
                 field.delete(0, "end")
-        p=tk.StringVar(value="N/A")
-        self.cost.configure(textvariable=p, fg_color="white")
-        self.sell_price.configure(textvariable=p, fg_color="white")
-            
+
+        proveedor = self.parent.proveedores[articulo.id_proveedor] if articulo.id_proveedor else MISSING_VALUE
+        marca = self.parent.marcas[articulo.id_marca] if articulo.id_marca else MISSING_VALUE
+        tipo = self.parent.tipos[articulo.id_tipo] if articulo.id_tipo else MISSING_VALUE
+
+        self.fields_value[IDX_CODE].insert(0,articulo.codigo)
+        self.fields_value[IDX_DESCRIPTION].insert(0,articulo.descripcion)
+        self.fields_value[IDX_SUPPLIER].set(proveedor)
+        self.fields_value[IDX_BRAND].set(marca)
+        self.fields_value[IDX_TYPE].set(tipo)
+        self.fields_value[IDX_LIST_PRICE].insert(0,articulo.precio_lista)
+        self.fields_value[IDX_IVA].insert(0,articulo.iva)
+        self.fields_value[IDX_STOCK].insert(0,articulo.stock)
+        self.fields_value[IDX_REP_POINT].insert(0,articulo.pto_reposicion)
+
+        dtos=[articulo.d1, articulo.d2, articulo.d3, articulo.d4]
+        for idx, field in enumerate(self.fields_value[IDX_DISCOUNT]):
+            field.delete(0,"end")
+            field.insert(0,dtos[idx])
+
+        revs=[articulo.g1, articulo.g2, articulo.g3, articulo.g4]
+        for idx, field in enumerate(self.fields_value[IDX_REVENUES]):
+            field.delete(0,"end")
+            field.insert(0,revs[idx])
+
+        self.update_prices(self.fields_value[IDX_LIST_PRICE], self.fields_value[IDX_DISCOUNT], self.fields_value[IDX_IVA], self.fields_value[IDX_REVENUES], self.cost, self.sell_price)
