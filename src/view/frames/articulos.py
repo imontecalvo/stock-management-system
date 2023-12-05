@@ -117,8 +117,8 @@ class ArticulosTab(TabFrame):
         self.page_bar.update(0)
 
     def create_tree(self):
-        columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Stock","Precio de lista", "Punto de reposicion")
-        col_width = [100,None,None,None,None,None,None,None]
+        columns = ("Codigo","Descripcion","Proveedor","Marca","Tipo","Precio Costo","Precio Venta")
+        col_width = [100,None,None,None,None,None,None]
 
         tree = CustomTreeView(self, columns, col_width)
         tree.grid(row=3, column=0,sticky='nsew',rowspan=1, padx=5, pady=5)
@@ -127,18 +127,6 @@ class ArticulosTab(TabFrame):
         #Habilita/Deshabilita boton de Eliminar Seleccion
         tree.bind("<<TreeviewSelect>>", lambda event: self.update_action_buttons())
         return tree
-
-    def calculate_prices(self,a):
-        total_cost = a.precio_lista
-        for dto in [a.d1,a.d2,a.d3,a.d4]:
-            total_cost -= (total_cost*dto/100)
-
-        total_cost += (total_cost*a.iva/100)
-
-        total_sell = total_cost
-        for gan in [a.g1,a.g2,a.g3,a.g4]:
-            total_sell += (total_sell*gan/100)
-        return total_cost, total_sell
 
     #Recibe un diccionario de filtros y actualiza tree view con articulos filtrados
     def update_tree(self):
@@ -153,7 +141,7 @@ class ArticulosTab(TabFrame):
                 proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else MISSING_VALUE
                 marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else MISSING_VALUE
                 tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else MISSING_VALUE
-                data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
+                data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_costo, a.precio_venta)
                 self.tree.insert(a.id, data)
         else:
             self.frame.after(100, lambda: ErrorWindow(r.content,self.root))

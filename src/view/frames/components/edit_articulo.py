@@ -199,6 +199,8 @@ class EditArticulo():
                     v=self.fields_value[i].get()
                 values.append(v)
             self.parent.update_articulo(self.current_id, values)
+
+            self.hide()
     
 
     def check_values(self):
