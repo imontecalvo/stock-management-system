@@ -16,10 +16,12 @@ class Articulo(db):
     d3 = Column(Integer())
     d4 = Column(Integer())
     iva = Column(Integer())
+    precio_costo = Column(Integer())
     g1 = Column(Integer())
     g2 = Column(Integer())
     g3 = Column(Integer())
     g4 = Column(Integer())
+    precio_venta = Column(Integer())
     stock = Column(Integer(), default=0)
     pto_reposicion = Column(Integer())
 
@@ -45,6 +47,7 @@ class Articulo(db):
         self.g4 = data["g4"]
         self.stock=data["stock"]
         self.pto_reposicion=data["pto_reposicion"]
+        self.calculate_prices()
         
     def update_data(self, data):
         self.codigo=data["codigo"]
@@ -64,3 +67,18 @@ class Articulo(db):
         self.g4 = data["g4"]
         self.stock=data["stock"]
         self.pto_reposicion=data["pto_reposicion"]
+        self.calculate_prices()
+
+    def calculate_prices(self):
+        self.precio_costo = self.precio_lista
+        for d in [self.d1, self.d2, self.d3, self.d4]:
+            self.precio_costo -= (self.precio_costo*d/100)
+
+        self.precio_costo += (self.precio_costo*self.iva/100)
+
+        self.precio_venta = self.precio_costo
+        for g in [self.g1, self.g2, self.g3, self.g4]:
+            self.precio_venta += (self.precio_venta*g/100)
+        
+        self.precio_costo = round(self.precio_costo,2)
+        self.precio_venta = round(self.precio_venta,2)
