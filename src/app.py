@@ -22,7 +22,7 @@ class App():
     def connect_db(self):
         user="root"
         password="root"
-        db_name="Gestor"
+        db_name="Gestor2"
         database_url = f"mysql+pymysql://{user}:{password}@localhost:3306/"
         engine = create_engine(database_url)
 

@@ -125,7 +125,7 @@ class ArticulosFilter():
     def menu_value_to_id(self,value, dict):
         if value in ["Todos los proveedores","Todas las marcas","Todos los tipos"]:
             return ""
-        if value == self.parent.MISSING_VALUE:
+        if value == MISSING_VALUE:
             return None
         return self.parent.get_id_from_value(dict,value)
     

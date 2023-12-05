@@ -79,6 +79,49 @@ class Model():
         except:
             return Response(False,"ERROR: No se pudo obtener la cantidad de artículos.")
 
+    def get_articulo_by_id(self, id):
+        query = f"SELECT * FROM Articulos WHERE id={id};"
+        try:
+            session = self.Session()
+            res = session.execute(text(query))
+            session.close()
+            articulo = None
+            for r in res:
+                data = {
+                    "id":r[0],
+                    "codigo":r[1],
+                    "descripcion":r[2],
+                    "id_proveedor":r[3],
+                    "id_marca":r[4],
+                    "id_tipo":r[5],
+                    "precio_lista":r[6],
+                    "d1":r[7],
+                    "d2":r[8],
+                    "d3":r[9],
+                    "d4":r[10],
+                    "iva":r[11],
+                    "g1":r[12],
+                    "g2":r[13],
+                    "g3":r[14],
+                    "g4":r[15],
+                    "stock":r[16],
+                    "pto_reposicion":r[17]
+                }
+                articulo = Articulo(data)
+            return Response(True, articulo)
+        except:
+            return Response(False,f"ERROR: No se pudo obtener el artículo {id}.")
+
+    def exist_articulo_by_code(self, code):
+        query = f"SELECT COUNT(*) FROM Articulos WHERE codigo='{code}';"
+        try:
+            session = self.Session()
+            res = session.execute(text(query))
+            session.close()
+            return Response(True, res.scalar())
+        except:
+            return Response(False,"ERROR: No se pudo verificar la existencia del artículo.")
+
     # Recibe un diccionario con filtros válidos, construye la query SQL y retorna lista de Articulos
     def get_articulos(self, limit=None, offset=None, filters={}):
         base = "SELECT * FROM Articulos"
@@ -91,7 +134,7 @@ class Model():
 
             articulos = []
             for r in res:
-                data= {
+                data = {
                     "id":r[0],
                     "codigo":r[1],
                     "descripcion":r[2],
@@ -99,8 +142,17 @@ class Model():
                     "id_marca":r[4],
                     "id_tipo":r[5],
                     "precio_lista":r[6],
-                    "stock":r[7],
-                    "pto_reposicion":r[8]
+                    "d1":r[7],
+                    "d2":r[8],
+                    "d3":r[9],
+                    "d4":r[10],
+                    "iva":r[11],
+                    "g1":r[12],
+                    "g2":r[13],
+                    "g3":r[14],
+                    "g4":r[15],
+                    "stock":r[16],
+                    "pto_reposicion":r[17]
                 }
                 articulos.append(Articulo(data))
 
