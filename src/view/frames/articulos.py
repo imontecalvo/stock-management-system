@@ -23,9 +23,6 @@ class ArticulosTab(TabFrame):
     def __init__(self, root, controller):
         super().__init__(root, controller)
 
-        #Constantes
-        self.NUMERIC_INPUTS = ["Stock","Precio de lista", "Punto de reposicion"]
-
         #Configuracion de frame
         self.frame.config(bg=HEADING_COLOR)
         self.frame.grid(row=0, column=0, sticky="nsew")
