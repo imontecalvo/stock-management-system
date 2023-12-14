@@ -29,33 +29,6 @@ class FacturacionTab(TabFrame):
         
         self.root.bind("<Configure>", self.on_resize)
 
-        # #Frame seccion
-        # self.canvas = tk.Canvas(self.frame)
-        # scrollbar = ttk.Scrollbar(self.frame, orient="vertical", command=self.canvas.yview)
-        # self.scrollable_frame = ttk.Frame(self.canvas)
-
-        # self.scrollable_frame.bind(
-        #     "<Configure>",
-        #     lambda e: self.canvas.configure(
-        #         scrollregion=self.canvas.bbox("all")
-        #     )
-        # )
-
-        # self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        # self.canvas.configure(yscrollcommand=scrollbar.set)
-
-        # # Configuración del desplazamiento de la rueda del ratón
-        # self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
-        # self.canvas.bind_all("<Button-4>", self._on_mousewheel)  # Para sistemas Linux
-        # self.canvas.bind_all("<Button-5>", self._on_mousewheel)  # Para sistemas Linux
-
-        # self.canvas.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
-        # scrollbar.grid(row=2, column=1, sticky="nse", padx=10, pady=10)
-
-        # self.curr_row=1
-        # add_card = customtkinter.CTkButton(self.frame, text="Agregar", fg_color="green", command=self.new_card)
-        # add_card.grid(row=1, column=0, sticky="w", padx=10, pady=10)
-
         # #Botones
         self.button_canvas = tk.Canvas(self.frame, bg="white")
         self.button_canvas.grid(row=3, column=0, sticky="sew", padx=10, pady=10)
@@ -85,6 +58,7 @@ class FacturacionTab(TabFrame):
 
         self.factura_items_frame.list_frame = tk.Frame(self.factura_items_frame, bg="blue",width=screen_width*0.6)
         self.factura_items_frame.list_frame.grid(row=0, column=0, sticky="nsw")
+        self.items_list()
 
         self.factura_items_frame.pricing_frame = tk.Frame(self.factura_items_frame, bg="green", width=screen_width*0.4)
         self.factura_items_frame.pricing_frame.grid(row=0, column=1, sticky="nse", padx=(10,0))
@@ -102,13 +76,44 @@ class FacturacionTab(TabFrame):
         self.canvas.update_idletasks()
         self.canvas.yview_moveto(1.0)
 
-    def _on_mousewheel(self, event):
-        factor = 1 if event.num == 5 else -1
-        self.canvas.yview_scroll(int(factor * 2), "units")
-
     def on_resize(self, event):
         screen_width = self.root.winfo_width()
 
         # Actualizar el ancho del Frame
         self.factura_items_frame.list_frame.config(width=screen_width*0.6)
         self.factura_items_frame.pricing_frame.config(width=screen_width*0.4)
+
+    def items_list(self):
+        #Frame seccion
+        self.factura_items_frame.list_frame.grid_columnconfigure(0, weight=1)
+        self.factura_items_frame.list_frame.grid_rowconfigure(1, weight=1)
+
+        self.canvas = tk.Canvas(self.factura_items_frame.list_frame, bg="white")
+        scrollbar = ttk.Scrollbar(self.factura_items_frame.list_frame, orient="vertical", command=self.canvas.yview)
+        self.scrollable_frame = ttk.Frame(self.canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
+            )
+        )
+
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Configuración del desplazamiento de la rueda del ratón
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        self.canvas.bind_all("<Button-4>", self._on_mousewheel)  # Para sistemas Linux
+        self.canvas.bind_all("<Button-5>", self._on_mousewheel)  # Para sistemas Linux
+
+        self.canvas.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
+        scrollbar.grid(row=1, column=1, sticky="nse", padx=(5,0), pady=10)
+
+        self.curr_row=1
+        add_card = customtkinter.CTkButton(self.factura_items_frame.list_frame, text="Agregar", fg_color="green", command=self.new_card)
+        add_card.grid(row=0, column=0, sticky="w", padx=10, pady=10)
+
+    def _on_mousewheel(self, event):
+        factor = 1 if event.num == 5 else -1
+        self.canvas.yview_scroll(int(factor * 2), "units")
