@@ -69,9 +69,13 @@ class FacturacionTab(TabFrame):
 
         customtkinter.CTkLabel(factura_pricing_frame, text=f"").grid(row=0, column=0, sticky="nsew", padx=10, pady=60)
 
-    def new_card(self):
-        label = customtkinter.CTkLabel(self.scrollable_frame, text=f"Producto {self.curr_row}", fg_color="gray", corner_radius=2)
-        label.grid(row=self.curr_row, column=0, sticky="nsew", padx=10, pady=10)
+    def new_articulo_row(self, cantidad, codigo, descripcion, precio, subtotal):
+        # label = customtkinter.CTkLabel(self.scrollable_frame, text=f"Producto {self.curr_row}", fg_color="gray", corner_radius=2)
+        # label.grid(row=self.curr_row, column=0, sticky="nsew", padx=10, pady=10)
+
+        articulo = FacturaArticuloRow(self, codigo, descripcion, precio, cantidad, subtotal)
+        articulo.bind(self.curr_row, 0, (10,0), 5)
+
         self.curr_row+=1
         self.canvas.update_idletasks()
         self.canvas.yview_moveto(1.0)
@@ -84,6 +88,7 @@ class FacturacionTab(TabFrame):
         self.factura_items_frame.pricing_frame.config(width=screen_width*0.4)
 
     def items_list(self):
+        COLOR_BG = "white"
         #Frame seccion
         self.factura_items_frame.list_frame.grid_columnconfigure(0, weight=1)
         self.factura_items_frame.list_frame.grid_rowconfigure(1, weight=1)
@@ -93,9 +98,9 @@ class FacturacionTab(TabFrame):
         header.grid(0,0)
 
         #Lista de items
-        self.canvas = tk.Canvas(self.factura_items_frame.list_frame, bg="white")
+        self.canvas = tk.Canvas(self.factura_items_frame.list_frame, bg=COLOR_BG)
         scrollbar = ttk.Scrollbar(self.factura_items_frame.list_frame, orient="vertical", command=self.canvas.yview)
-        self.scrollable_frame = ttk.Frame(self.canvas)
+        self.scrollable_frame = tk.Frame(self.canvas,bg=COLOR_BG)
 
         self.scrollable_frame.bind(
             "<Configure>",
@@ -120,9 +125,10 @@ class FacturacionTab(TabFrame):
         header.bind_events()
 
     def _on_mousewheel(self, event):
+        if event.num == 4 and self.canvas.yview()[0]==0:
+            return
         factor = 1 if event.num == 5 else -1
         self.canvas.yview_scroll(int(factor * 2), "units")
-
 
 
 class HeaderItems:
@@ -158,9 +164,17 @@ class HeaderItems:
         self.subtotal = customtkinter.CTkLabel(self.frame, text="",fg_color=LIGHT_GRAY, text_color="black", corner_radius=2, width=90)
         self.subtotal.grid(row=1, column=4, sticky="nsew", padx=10, pady=(0,10))
 
-        self.add_card = customtkinter.CTkButton(self.frame, text="Agregar", fg_color="green", width=25, command=parent.new_card, state="disabled")
+        self.add_card = customtkinter.CTkButton(self.frame, text="Agregar", fg_color="green", width=25, command=self.send_data, state="disabled")
         self.add_card.grid(row=1, column=6, sticky="e", padx=5, pady=(0,10))
         self.add_card.articulo_field = False
+
+    def send_data(self):
+        cantidad = self.cantidad.get()
+        codigo = self.codigo.get()
+        descripcion = self.descripcion.get()
+        precio = self.precio.cget('text')
+        subtotal = self.subtotal.cget('text')
+        self.parent.new_articulo_row(cantidad, codigo, descripcion, precio, subtotal)
 
     def grid(self, row, column):
         self.frame.grid(row=row, column=column, sticky="nsew")
@@ -268,3 +282,17 @@ class EntryWithSuggestions:
 
     def change_in_var(self, command):
         self.var.trace_add("write", command)
+
+class FacturaArticuloRow():
+    def __init__(self, parent, codigo, descripcion, precio, cantidad, subtotal):
+
+        self.frame = tk.Frame(parent.scrollable_frame, bg=WHITE)
+
+        customtkinter.CTkLabel(self.frame, text=cantidad, text_color="black", width=53).grid(row=0, column=0, sticky="nsew", padx=(0,10), pady=(10,10))
+        customtkinter.CTkLabel(self.frame, text=codigo, text_color="black", width=150).grid(row=0, column=1, sticky="nsew", padx=10, pady=(10,10))
+        customtkinter.CTkLabel(self.frame, text=descripcion, text_color="black", width=250).grid(row=0, column=2, sticky="nsew", padx=10, pady=(10,10))
+        customtkinter.CTkLabel(self.frame, text=precio, text_color="black", width=90).grid(row=0, column=3, sticky="nsew", padx=10, pady=(10,10))
+        customtkinter.CTkLabel(self.frame, text=subtotal, text_color="black", width=90).grid(row=0, column=4, sticky="nsew", padx=(10,0), pady=(10,10))
+
+    def bind(self, row, column, padx, pady):
+        self.frame.grid(row=row, column=column, padx=padx, pady=pady, sticky="nsew")
