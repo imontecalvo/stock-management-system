@@ -68,6 +68,9 @@ class Model():
         query+";"
         return query
 
+    def get_articulos_columns(self):
+        return Articulo.columns()
+
     def get_no_articulos(self,filters={}):
         base = "SELECT COUNT(*) FROM Articulos"
         query = base+self.__where_closure_articulos(None,None, filters)
@@ -123,38 +126,40 @@ class Model():
             return Response(False,"ERROR: No se pudo verificar la existencia del artículo.")
 
     # Recibe un diccionario con filtros válidos, construye la query SQL y retorna lista de Articulos
-    def get_articulos(self, limit=None, offset=None, filters={}):
-        base = "SELECT * FROM Articulos"
+    def get_articulos(self, limit=None, offset=None, filters={}, cols=[]):
+        base = f"SELECT {','.join(cols) if cols else '*' } FROM Articulos"
         query = base+self.__where_closure_articulos(limit, offset, filters)
-        
         try:
             session = self.Session()
             res = session.execute(text(query))
             session.close()
 
-            articulos = []
-            for r in res:
-                data = {
-                    "id":r[0],
-                    "codigo":r[1],
-                    "descripcion":r[2],
-                    "id_proveedor":r[3],
-                    "id_marca":r[4],
-                    "id_tipo":r[5],
-                    "precio_lista":r[6],
-                    "d1":r[7],
-                    "d2":r[8],
-                    "d3":r[9],
-                    "d4":r[10],
-                    "iva":r[11],
-                    "g1":r[12],
-                    "g2":r[13],
-                    "g3":r[14],
-                    "g4":r[15],
-                    "stock":r[16],
-                    "pto_reposicion":r[17]
-                }
-                articulos.append(Articulo(data))
+            if cols:
+                articulos = [a for a in res]
+            else:
+                articulos = []
+                for r in res:
+                    data = {
+                        "id":r[0],
+                        "codigo":r[1],
+                        "descripcion":r[2],
+                        "id_proveedor":r[3],
+                        "id_marca":r[4],
+                        "id_tipo":r[5],
+                        "precio_lista":r[6],
+                        "d1":r[7],
+                        "d2":r[8],
+                        "d3":r[9],
+                        "d4":r[10],
+                        "iva":r[11],
+                        "g1":r[12],
+                        "g2":r[13],
+                        "g3":r[14],
+                        "g4":r[15],
+                        "stock":r[16],
+                        "pto_reposicion":r[17]
+                    }
+                    articulos.append(Articulo(data))
 
             return Response(True, articulos)
         except:

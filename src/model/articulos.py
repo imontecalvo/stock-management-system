@@ -82,3 +82,7 @@ class Articulo(db):
         
         self.precio_costo = round(self.precio_costo,2)
         self.precio_venta = round(self.precio_venta,2)
+
+    @classmethod
+    def columns(cls):
+        return cls.__table__.columns.keys()

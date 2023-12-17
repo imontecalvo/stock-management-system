@@ -4,6 +4,13 @@ class Controller():
     def __init__(self, model):
         self.model=model
 
+    def check_columns_articulos(self, cols):
+        valid_columns = self.model.get_articulos_columns()
+        for c in cols:
+            if not c in valid_columns:
+                return False
+        return True
+
     def check_filters_articulos(self, filters={}):
         filter_by = ["codigo","descripcion","id_proveedor","id_marca","id_tipo","precio_min","precio_max"]
         useless_keys = []
@@ -34,13 +41,19 @@ class Controller():
         return self.model.add_articulo(articulo)
 
     # Recibe lista de filtros, los chequea y hace casteos y devuelve lista de Articulos
-    def get_articulos(self, filters={}):
+    def get_articulos(self, filters={}, cols=[]):
         filters = self.check_filters_articulos(filters)
-        return self.model.get_articulos(filters)
+        if self.check_columns_articulos(cols):
+            return self.model.get_articulos(filters=filters, cols=cols)
+        else:
+            return Response(False,"ERROR: Columnas no válidas")
         
-    def get_articulos_in_range(self, limit, offset, filters={}):
+    def get_articulos_in_range(self, limit, offset, filters={}, cols=[]):
         filters = self.check_filters_articulos(filters)
-        return self.model.get_articulos(limit, offset, filters)
+        if self.check_columns_articulos(cols):
+            return self.model.get_articulos(limit, offset,filters=filters, cols=cols)
+        else:
+            return Response(False,"ERROR: Columnas no válidas")
 
     def delete_articulos_by_id(self, id_articulos):
         if type(id_articulos) is tuple:

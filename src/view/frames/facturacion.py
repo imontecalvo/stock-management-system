@@ -177,43 +177,78 @@ class HeaderItems:
         for f in [self.parent.frame, self.frame, self.parent.factura_items_frame.pricing_frame, self.parent.factura_data_frame, self.parent.scrollable_frame, self.parent.canvas, self.cant_label, self.codigo_label, self.desc_label, self.precio_label, self.subtotal_label]:
             f.bind("<Button-1>", self.descripcion.hide_menu)
             f.bind("<Button-3>", self.descripcion.hide_menu)
+            f.bind("<Button-1>", self.codigo.hide_menu)
+            f.bind("<Button-3>", self.codigo.hide_menu)
+
+        def open_widget_menu(widget, field, linked_widget):
+            self.change_suggestions(widget, field, linked_widget)
+            widget.show_menu()
+            linked_widget.hide_menu()
+
+        self.codigo.entry.bind("<Button-1>", lambda e: open_widget_menu(self.codigo, "codigo", self.descripcion))
+        self.descripcion.entry.bind("<Button-1>", lambda e: open_widget_menu(self.descripcion, "descripcion", self.codigo))
+
+        self.codigo.change_in_var(lambda x,y,z: self.change_suggestions(self.codigo, "codigo", self.descripcion))
+        self.descripcion.change_in_var(lambda x,y,z: self.change_suggestions(self.descripcion, "descripcion", self.codigo))
+
+    def change_suggestions(self, widget, field, linked_widget):
+        if widget.changed_by_user:
+            linked_widget.changed_by_user = False
+            LIMIT, OFFSET = 10, 0
+            value = widget.get()
+            r = self.parent.controller.get_articulos_in_range(LIMIT, OFFSET, filters={field:value}, cols=["codigo","descripcion"])
+            if r.ok:
+                options=r.content
+
+                codigos, descripciones = zip(*options) if options else [(),()]
+                options, linked_values = [list(codigos), list(descripciones)] if field=="codigo" else [list(descripciones), list(codigos)]
+                widget.set_options(options)
+                
+                if value not in options:
+                    linked_widget.var.set("")
+                    linked_widget.menu.delete(0, "end")
+                else:
+                    linked_value = linked_values[options.index(value)]
+                    linked_widget.var.set(linked_value)
+        widget.changed_by_user = True
 
 class EntryWithSuggestions:
     def __init__(self, frame, width=150):
+        self.changed_by_user = True
         self.var=tk.StringVar(value="")
         self.entry = customtkinter.CTkEntry(frame, fg_color="white", text_color="black", corner_radius=2, width=width, textvariable=self.var)
 
         self.menu = tk.Menu(self.entry, tearoff=0)
-        options=["a1","a2","a12","b23","bb45","c1"]
-        for option in options:
-            self.menu.add_command(label=option, command=lambda o=option: self.select_item(o))
+        # options=["a1","a2","a12","b23","bb45","c1"]
+        # for option in options:
+        #     self.menu.add_command(label=option, command=lambda o=option: self.select_item(o))
         self.menu.config(bg =WHITE,fg='black',activebackground=BLUE,activeforeground='white')
 
         # Configurar eventos de clic en el Entry
-        # self.entry.bind("<FocusIn>", self.show_menu)
-        self.entry.bind("<Button-1>", self.show_menu)
+        # self.entry.bind("<Button-1>", lambda e: self.show_menu())
+        # self.var.trace_add("write", lambda x,y,z: self.show_menu())
         self.entry.bind("<FocusOut>", self.hide_menu)
 
         #Actualizar menu
         # self.entry.bind("<KeyRelease>", self.show_options)
 
-    def show_options(self, *args):
-        options=["a1","a2","a12","b23","bb45","c1"]
-
+    def set_options(self, options):
+        self.menu.delete(0, "end") #Limpia las opciones ya cargadas
         value = self.var.get()
 
         if value != "":
-            # Agregar opciones que coincidan con el texto actual
             for option in options:
-                if option.startswith(value):
-                    self.menu.add_command(label=option, command=lambda: self.select_item(option))
+                self.menu.add_command(label=option, command=lambda o=option: self.select_item(o))
+            
+    def get(self):
+        return self.var.get()
 
     # Mostrar el menú cuando se hace clic en el Entry
-    def show_menu(self, event):
+    def show_menu(self, event=None):
         self.menu.post(self.entry.winfo_rootx(), self.entry.winfo_rooty() + self.entry.winfo_height())
 
     # Ocultar el menú
-    def hide_menu(self, event):
+    def hide_menu(self, event=None):
         self.menu.unpost()
 
 
@@ -223,11 +258,27 @@ class EntryWithSuggestions:
     def grid(self, row, column, padx, pady):
         self.entry.grid(row=row, column=column, padx=padx, pady=pady, sticky="nsew")
 
+    def bind(self, event, command):
+        self.entry.bind(event, command)
+
+    def change_in_var(self, command):
+        self.var.trace_add("write", command)
+
 
 #Se queda con el ultimo elemento -> se reemplaza en memoria
 #Cerrar menu al clickear fuera
 #Chequear que ande bien la seleccion del item
-        
 #Actualizar dinamicamente las opciones del menu
-#Autoupdate de codigo-descripcion
+        
+#Actualizar con datos de la db
+#Comportamiento
+    #Si el codigo o descripcion existe
+        #Autoupdate de codigo-descripcion
+        #Autocomplear precio
+        #Habilitar boton Agregar (si ademas la cant > 0)
 #Bloquear Agregar si falta algun campo o el codigo o descripcion no existen o la cant <= 0 
+        
+
+#Bug: Escribo completo uno, se autocompleta el otro pero cuando hago click en ese no se despliega las opciones.
+#Creo q tiene q ver con que estoy borrando el options en change_suggestions. El borrado del options lo habia hecho
+#porque sino ese widget queda con las options viejas y muestra cualquiera. 
