@@ -6,7 +6,6 @@ from view.CTkRangeSlider import *
 import customtkinter
 
 from ..constants import *
-from utils.response import Response
 
 class FacturacionTab(TabFrame):
     def __init__(self, root, controller):
@@ -119,10 +118,6 @@ class FacturacionTab(TabFrame):
 
         #Events
         header.bind_events()
-        
-
-
-
 
     def _on_mousewheel(self, event):
         factor = 1 if event.num == 5 else -1
@@ -151,14 +146,9 @@ class HeaderItems:
         self.cantidad.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0,10))
         self.cantidad.configure(validate="key", validatecommand=(parent.root.validate_numeric_input, "%P"))
 
-        # self.codigo = customtkinter.CTkEntry(self.frame,fg_color="white", text_color="black", corner_radius=2)
-        # self.codigo.grid(row=1, column=1, sticky="nsew", padx=10, pady=(0,10))
-
         self.codigo = EntryWithSuggestions(self.frame)
         self.codigo.grid(row=1, column=1, padx=10, pady=(0,10))
 
-        # self.descripcion = customtkinter.CTkComboBox(self.frame, fg_color="white", text_color="black", corner_radius=2, width=250)
-        # self.descripcion.grid(row=1, column=2, sticky="nsew", padx=10, pady=(0,10))
         self.descripcion = EntryWithSuggestions(self.frame, 250)
         self.descripcion.grid(row=1, column=2, padx=10, pady=(0,10))
 
@@ -244,18 +234,8 @@ class EntryWithSuggestions:
         self.entry = customtkinter.CTkEntry(frame, fg_color="white", text_color="black", corner_radius=2, width=width, textvariable=self.var)
 
         self.menu = tk.Menu(self.entry, tearoff=0)
-        # options=["a1","a2","a12","b23","bb45","c1"]
-        # for option in options:
-        #     self.menu.add_command(label=option, command=lambda o=option: self.select_item(o))
         self.menu.config(bg =WHITE,fg='black',activebackground=BLUE,activeforeground='white')
-
-        # Configurar eventos de clic en el Entry
-        # self.entry.bind("<Button-1>", lambda e: self.show_menu())
-        # self.var.trace_add("write", lambda x,y,z: self.show_menu())
         self.entry.bind("<FocusOut>", self.hide_menu)
-
-        #Actualizar menu
-        # self.entry.bind("<KeyRelease>", self.show_options)
 
     def set_options(self, options):
         self.menu.delete(0, "end") #Limpia las opciones ya cargadas
@@ -288,25 +268,3 @@ class EntryWithSuggestions:
 
     def change_in_var(self, command):
         self.var.trace_add("write", command)
-
-
-#Se queda con el ultimo elemento -> se reemplaza en memoria
-#Cerrar menu al clickear fuera
-#Chequear que ande bien la seleccion del item
-#Actualizar dinamicamente las opciones del menu
-        
-#Actualizar con datos de la db
-#Comportamiento
-    #Si el codigo o descripcion existe
-        #Autoupdate de codigo-descripcion
-        #Autocomplear precio
-        #Habilitar boton Agregar (si ademas la cant > 0)
-#Bloquear Agregar si falta algun campo o el codigo o descripcion no existen o la cant <= 0 
-        
-
-#Bug: Escribo completo uno, se autocompleta el otro pero cuando hago click en ese no se despliega las opciones.
-#Creo q tiene q ver con que estoy borrando el options en change_suggestions. El borrado del options lo habia hecho
-#porque sino ese widget queda con las options viejas y muestra cualquiera. 
-        
-#actualizar estado boton al cambiar cantidad
-#Problemas upper lower de coincidencia de opciones
