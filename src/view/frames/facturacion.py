@@ -147,8 +147,9 @@ class HeaderItems:
         self.subtotal_label = customtkinter.CTkLabel(self.frame, text=f"Subtotal", text_color="black", corner_radius=2)
         self.subtotal_label.grid(row=0, column=4, sticky="nsew", padx=10, pady=(10,5))
 
-        self.cantidad = customtkinter.CTkEntry(self.frame, fg_color="white", text_color="black", corner_radius=2, width=5)
+        self.cantidad = customtkinter.CTkEntry(self.frame, fg_color="white", text_color="black", corner_radius=2, width=5, textvariable=tk.StringVar(value="1"))
         self.cantidad.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0,10))
+        self.cantidad.configure(validate="key", validatecommand=(parent.root.validate_numeric_input, "%P"))
 
         # self.codigo = customtkinter.CTkEntry(self.frame,fg_color="white", text_color="black", corner_radius=2)
         # self.codigo.grid(row=1, column=1, sticky="nsew", padx=10, pady=(0,10))
@@ -167,8 +168,9 @@ class HeaderItems:
         self.subtotal = customtkinter.CTkLabel(self.frame, text="",fg_color=LIGHT_GRAY, text_color="black", corner_radius=2, width=90)
         self.subtotal.grid(row=1, column=4, sticky="nsew", padx=10, pady=(0,10))
 
-        add_card = customtkinter.CTkButton(self.frame, text="Agregar", fg_color="green", width=25, command=parent.new_card)
-        add_card.grid(row=1, column=6, sticky="e", padx=5, pady=(0,10))
+        self.add_card = customtkinter.CTkButton(self.frame, text="Agregar", fg_color="green", width=25, command=parent.new_card, state="disabled")
+        self.add_card.grid(row=1, column=6, sticky="e", padx=5, pady=(0,10))
+        self.add_card.articulo_field = False
 
     def grid(self, row, column):
         self.frame.grid(row=row, column=column, sticky="nsew")
@@ -191,26 +193,49 @@ class HeaderItems:
         self.codigo.change_in_var(lambda x,y,z: self.change_suggestions(self.codigo, "codigo", self.descripcion))
         self.descripcion.change_in_var(lambda x,y,z: self.change_suggestions(self.descripcion, "descripcion", self.codigo))
 
+        self.cantidad.bind("<KeyRelease>", lambda e: self.update_button())
+
     def change_suggestions(self, widget, field, linked_widget):
         if widget.changed_by_user:
             linked_widget.changed_by_user = False
             LIMIT, OFFSET = 10, 0
             value = widget.get()
-            r = self.parent.controller.get_articulos_in_range(LIMIT, OFFSET, filters={field:value}, cols=["codigo","descripcion"])
+            r = self.parent.controller.get_articulos_in_range(LIMIT, OFFSET, filters={field:value}, cols=["codigo","descripcion","precio_venta"])
             if r.ok:
                 options=r.content
-
-                codigos, descripciones = zip(*options) if options else [(),()]
-                options, linked_values = [list(codigos), list(descripciones)] if field=="codigo" else [list(descripciones), list(codigos)]
+                codigos, descripciones, precios= zip(*options) if options else [(),(),()]
+                options, linked_values, precios = [list(codigos), list(descripciones),list(precios)] if field=="codigo" else [list(descripciones), list(codigos),list(precios)]
                 widget.set_options(options)
+                
+                value = value.upper()
+                options = [o.upper() for o in options]
                 
                 if value not in options:
                     linked_widget.var.set("")
                     linked_widget.menu.delete(0, "end")
+                    self.add_card.articulo_field = False
+                    self.precio.configure(text="")
                 else:
                     linked_value = linked_values[options.index(value)]
                     linked_widget.var.set(linked_value)
+                    self.add_card.articulo_field = True
+                    self.precio.configure(text=f"$ {precios[options.index(value)]}")
+                self.update_button()
         widget.changed_by_user = True
+
+    def update_button(self):
+        self.update_subtotal_articulo()
+        if self.add_card.articulo_field and self.cantidad.get()!="" and int(self.cantidad.get()) > 0:
+            self.add_card.configure(state="normal")
+        else:
+            self.add_card.configure(state="disabled")
+
+    def update_subtotal_articulo(self):
+        if self.cantidad.get()!="" and self.precio.cget('text')!="":
+            self.subtotal.configure(text=f"$ {round(int(self.cantidad.get())*float(self.precio.cget('text')[2:]),2)}")
+        else:
+            self.subtotal.configure(text=f"")
+
 
 class EntryWithSuggestions:
     def __init__(self, frame, width=150):
@@ -282,3 +307,6 @@ class EntryWithSuggestions:
 #Bug: Escribo completo uno, se autocompleta el otro pero cuando hago click en ese no se despliega las opciones.
 #Creo q tiene q ver con que estoy borrando el options en change_suggestions. El borrado del options lo habia hecho
 #porque sino ese widget queda con las options viejas y muestra cualquiera. 
+        
+#actualizar estado boton al cambiar cantidad
+#Problemas upper lower de coincidencia de opciones
