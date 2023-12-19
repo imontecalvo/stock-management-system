@@ -1,93 +1,74 @@
-# import tkinter as tk
-# from tkinter import ttk
-
-# def calculate_visible_rows(treeview_height, row_height):
-#     return int(treeview_height / row_height)
-
-# # Create a simple Tkinter window
-# root = tk.Tk()
-# root.title("Treeview Pagination")
-# root.attributes("-zoomed", True)
-
-# root.grid_rowconfigure(1, weight=1)
-
-# b = tk.Button(root, text="Click", command=lambda: print("Number of visible rows:", int(treeview.winfo_height()//row_height)-1))
-# b.grid(row=0,column=0)
-
-
-# # Create a Treeview widget
-# treeview = ttk.Treeview(root, columns=("Column1", "Column2"))
-# # Insert sample data
-# for i in range(1, 1):
-#     treeview.insert("", "end", values=("Item {}".format(i), "Description {}".format(i)))
-
-# # Pack the Treeview widget
-# treeview.grid(row=1, column=0, sticky='nsew')
-
-# # Get the total height of the Treeview
-# treeview_height = treeview.winfo_reqheight()
-
-# # Assume each row has a height of 20 pixels (you should adjust this based on your actual row height)
-# row_height = 20
-
-# # Calculate the number of visible rows
-# visible_rows = calculate_visible_rows(treeview.winfo_reqheight(), row_height)
-
-# # Print the result
-# # print("Number of visible rows:", calculate_visible_rows(treeview.winfo_reqheight(), row_height))
-
-# print(treeview.winfo_height())
-# # print("Number of visible rows:", int(treeview.winfo_height()//row_height)-1)
-
-# root.after(10000, print("Visible rows:", int(treeview.winfo_height()//row_height)-1))
-# # Start the Tkinter event loop
-# root.mainloop()
-
-# #
-
-
 import tkinter as tk
 from tkinter import ttk
 
-def calculate_visible_rows(treeview, row_height):
-    treeview.update()  # Force an update to get the correct dimensions
-    treeview_height = treeview.winfo_height()
-    return int(treeview_height / row_height)
+class ScrollableFrame(tk.Frame):
+    def __init__(self, container, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
 
-# Create a simple Tkinter window
+        self.canvas = tk.Canvas(self)
+        scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.scrollable_frame = tk.Frame(self.canvas, bg="orange")
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
+            )
+        )
+
+        # Crear la ventana dentro del Canvas
+        self.window_id = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        self.canvas.configure(yscrollcommand=scrollbar.set)
+
+        if tk.Tk().tk.call('tk', 'windowingsystem') == 'win32':
+            self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        elif tk.Tk().tk.call('tk', 'windowingsystem') == 'x11':
+            self.canvas.bind_all("<Button-4>", self._on_mousewheel)
+            self.canvas.bind_all("<Button-5>", self._on_mousewheel)
+
+        self.canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        canvas_width = self.canvas.winfo_width()
+        self.canvas.itemconfig(self.window_id, width=canvas_width)
+
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    def agregar_tarjeta(self, texto):
+        tarjeta = tk.Label(self.scrollable_frame, text=texto, relief="solid")
+        tarjeta.pack(padx=0, pady=0, ipadx=10, ipady=5)
+
+        # Después de agregar la tarjeta, ajustar el ancho del widget a ancho del Canvas
+        # self.update_window_width()
+
+        self.canvas.yview_moveto(1.0)
+
+    def update_window_width(self):
+        canvas_width = self.canvas.winfo_width()
+        self.canvas.itemconfig(self.window_id, width=canvas_width)
+        # self.canvas.update_idletasks()
+
+# Función para agregar un producto
+def agregar_producto():
+    global contador
+    texto_tarjeta = f"Producto {contador}"
+    scrollable_frame.agregar_tarjeta(texto_tarjeta)
+    contador += 1
+
+# Crear la ventana principal
 root = tk.Tk()
-root.title("Treeview Pagination")
-root.attributes("-zoomed", True)
-root.grid_rowconfigure(0,weight=1)
-root.grid_columnconfigure(0,weight=1)
+root.title("Tarjetas Desplazables")
 
-# Create a Treeview widget
+# Crear un frame scrollable
+scrollable_frame = ScrollableFrame(root)
+scrollable_frame.pack(expand=True, fill="both")
 
+# Botón para agregar productos
+contador = 1
+btn_agregar = tk.Button(root, text="Agregar Producto", command=agregar_producto)
+btn_agregar.pack(pady=10, side="bottom")
 
-frame = tk.Frame(root, bg="red")
-frame.grid(row=0, column=0, sticky='nsew')
-frame.grid_rowconfigure(1,weight=1)
-
-l = tk.Label(frame, text="ASdadsas")
-l.grid(row=0,column=0, pady=100)
-
-treeview = ttk.Treeview(frame, columns=("Column1", "Column2"))
-
-# Insert sample data
-for i in range(1, 101):
-    treeview.insert("", "end", values=("Item {}".format(i), "Description {}".format(i)))
-
-# Pack the Treeview widget
-treeview.grid(row=1,column=0, sticky='nsew')
-
-# Assume each row has a height of 20 pixels (you should adjust this based on your actual row height)
-row_height = 20
-
-# Calculate the number of visible rows
-visible_rows = calculate_visible_rows(treeview, row_height)
-
-# Print the result
-print("Number of visible rows:", visible_rows)
-
-# Start the Tkinter event loop
+# Iniciar la aplicación
 root.mainloop()

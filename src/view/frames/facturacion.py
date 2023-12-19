@@ -75,20 +75,25 @@ class FacturacionTab(TabFrame):
 
         articulo = FacturaArticuloRow(self, codigo, descripcion, precio, cantidad, subtotal)
         articulo.bind(self.curr_row, 0, (10,0), 5)
-
         self.curr_row+=1
         self.canvas.update_idletasks()
+
+        # canvas_width = self.canvas.winfo_width()
+        # self.canvas.itemconfig(self.window_id, width=canvas_width)
+
         self.canvas.yview_moveto(1.0)
 
     def on_resize(self, event):
         screen_width = self.root.winfo_width()
 
         # Actualizar el ancho del Frame
-        self.factura_items_frame.list_frame.config(width=screen_width*0.6)
-        self.factura_items_frame.pricing_frame.config(width=screen_width*0.4)
+        self.factura_items_frame.list_frame.config(width=screen_width*0.7)
+        self.factura_items_frame.pricing_frame.config(width=screen_width*0.3)
 
     def items_list(self):
         COLOR_BG = "white"
+        self.items = []
+
         #Frame seccion
         self.factura_items_frame.list_frame.grid_columnconfigure(0, weight=1)
         self.factura_items_frame.list_frame.grid_rowconfigure(1, weight=1)
@@ -109,8 +114,12 @@ class FacturacionTab(TabFrame):
             )
         )
 
-        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        # Crear la ventana dentro del Canvas
+        self.window_id = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Actualizar el ancho del Scrolleable Frame
+        self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfig(self.window_id, width=self.canvas.winfo_width()))
 
         # Configuración del desplazamiento de la rueda del ratón
         self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
@@ -118,6 +127,8 @@ class FacturacionTab(TabFrame):
         self.canvas.bind_all("<Button-5>", self._on_mousewheel)  # Para sistemas Linux
 
         self.canvas.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
+        # self.canvas.grid_columnconfigure(0, weight=1)
+        self.scrollable_frame.columnconfigure(0, weight=1)
         scrollbar.grid(row=1, column=1, sticky="nse", padx=(5,0), pady=10)
         self.curr_row=1
 
@@ -287,12 +298,14 @@ class FacturaArticuloRow():
     def __init__(self, parent, codigo, descripcion, precio, cantidad, subtotal):
 
         self.frame = tk.Frame(parent.scrollable_frame, bg=WHITE)
+        self.frame.columnconfigure(5, weight=1)
 
         customtkinter.CTkLabel(self.frame, text=cantidad, text_color="black", width=53).grid(row=0, column=0, sticky="nsew", padx=(0,10), pady=(10,10))
         customtkinter.CTkLabel(self.frame, text=codigo, text_color="black", width=150).grid(row=0, column=1, sticky="nsew", padx=10, pady=(10,10))
         customtkinter.CTkLabel(self.frame, text=descripcion, text_color="black", width=250).grid(row=0, column=2, sticky="nsew", padx=10, pady=(10,10))
         customtkinter.CTkLabel(self.frame, text=precio, text_color="black", width=90).grid(row=0, column=3, sticky="nsew", padx=10, pady=(10,10))
         customtkinter.CTkLabel(self.frame, text=subtotal, text_color="black", width=90).grid(row=0, column=4, sticky="nsew", padx=(10,0), pady=(10,10))
+        customtkinter.CTkButton(self.frame, text="X", fg_color=RED, hover_color=RED_HOVER, width=30, command=self.frame.destroy).grid(row=0, column=6, sticky="ne", padx=(10,10), pady=(10,10))
 
     def bind(self, row, column, padx, pady):
         self.frame.grid(row=row, column=column, padx=padx, pady=pady, sticky="nsew")
