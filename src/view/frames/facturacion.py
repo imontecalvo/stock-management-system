@@ -31,7 +31,7 @@ class FacturacionTab(TabFrame):
         # #Botones
         self.button_canvas = tk.Canvas(self.frame, bg="white")
         self.button_canvas.grid(row=3, column=0, sticky="sew", padx=10, pady=10)
-        customtkinter.CTkButton(self.button_canvas, text="Guardar", fg_color="green").pack(side="left")
+        customtkinter.CTkButton(self.button_canvas, text="Guardar", fg_color="green", command=lambda: print(self.items)).pack(side="left")
 
 
 
@@ -70,18 +70,16 @@ class FacturacionTab(TabFrame):
         customtkinter.CTkLabel(factura_pricing_frame, text=f"").grid(row=0, column=0, sticky="nsew", padx=10, pady=60)
 
     def new_articulo_row(self, cantidad, codigo, descripcion, precio, subtotal):
-        # label = customtkinter.CTkLabel(self.scrollable_frame, text=f"Producto {self.curr_row}", fg_color="gray", corner_radius=2)
-        # label.grid(row=self.curr_row, column=0, sticky="nsew", padx=10, pady=10)
-
         articulo = FacturaArticuloRow(self, codigo, descripcion, precio, cantidad, subtotal)
         articulo.bind(self.curr_row, 0, (10,0), 5)
         self.curr_row+=1
+
         self.canvas.update_idletasks()
-
-        # canvas_width = self.canvas.winfo_width()
-        # self.canvas.itemconfig(self.window_id, width=canvas_width)
-
         self.canvas.yview_moveto(1.0)
+
+        self.items[self.curr_id]=(cantidad, codigo, descripcion, precio, subtotal)
+        self.curr_id+=1
+
 
     def on_resize(self, event):
         screen_width = self.root.winfo_width()
@@ -92,7 +90,8 @@ class FacturacionTab(TabFrame):
 
     def items_list(self):
         COLOR_BG = "white"
-        self.items = []
+        self.curr_id = 0
+        self.items = {}
 
         #Frame seccion
         self.factura_items_frame.list_frame.grid_columnconfigure(0, weight=1)
@@ -299,13 +298,19 @@ class FacturaArticuloRow():
 
         self.frame = tk.Frame(parent.scrollable_frame, bg=WHITE)
         self.frame.columnconfigure(5, weight=1)
+        self.id = parent.curr_id
+        self.parent = parent
 
         customtkinter.CTkLabel(self.frame, text=cantidad, text_color="black", width=53).grid(row=0, column=0, sticky="nsew", padx=(0,10), pady=(10,10))
         customtkinter.CTkLabel(self.frame, text=codigo, text_color="black", width=150).grid(row=0, column=1, sticky="nsew", padx=10, pady=(10,10))
         customtkinter.CTkLabel(self.frame, text=descripcion, text_color="black", width=250).grid(row=0, column=2, sticky="nsew", padx=10, pady=(10,10))
         customtkinter.CTkLabel(self.frame, text=precio, text_color="black", width=90).grid(row=0, column=3, sticky="nsew", padx=10, pady=(10,10))
         customtkinter.CTkLabel(self.frame, text=subtotal, text_color="black", width=90).grid(row=0, column=4, sticky="nsew", padx=(10,0), pady=(10,10))
-        customtkinter.CTkButton(self.frame, text="X", fg_color=RED, hover_color=RED_HOVER, width=30, command=self.frame.destroy).grid(row=0, column=6, sticky="ne", padx=(10,10), pady=(10,10))
+        customtkinter.CTkButton(self.frame, text="X", fg_color=RED, hover_color=RED_HOVER, width=30, command=self.delete).grid(row=0, column=6, sticky="ne", padx=(10,10), pady=(10,10))
 
     def bind(self, row, column, padx, pady):
         self.frame.grid(row=row, column=column, padx=padx, pady=pady, sticky="nsew")
+
+    def delete(self):
+        del self.parent.items[self.id]
+        self.frame.destroy()
