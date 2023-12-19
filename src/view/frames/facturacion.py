@@ -71,7 +71,7 @@ class FacturacionTab(TabFrame):
 
     def new_articulo_row(self, cantidad, codigo, descripcion, precio, subtotal):
         articulo = FacturaArticuloRow(self, codigo, descripcion, precio, cantidad, subtotal)
-        articulo.bind(self.curr_row, 0, (10,0), 5)
+        articulo.bind(self.curr_row, 0, (10,0), 2)
         self.curr_row+=1
 
         self.canvas.update_idletasks()
@@ -301,12 +301,12 @@ class FacturaArticuloRow():
         self.id = parent.curr_id
         self.parent = parent
 
-        customtkinter.CTkLabel(self.frame, text=cantidad, text_color="black", width=53).grid(row=0, column=0, sticky="nsew", padx=(0,10), pady=(10,10))
-        customtkinter.CTkLabel(self.frame, text=codigo, text_color="black", width=150).grid(row=0, column=1, sticky="nsew", padx=10, pady=(10,10))
-        customtkinter.CTkLabel(self.frame, text=descripcion, text_color="black", width=250).grid(row=0, column=2, sticky="nsew", padx=10, pady=(10,10))
-        customtkinter.CTkLabel(self.frame, text=precio, text_color="black", width=90).grid(row=0, column=3, sticky="nsew", padx=10, pady=(10,10))
-        customtkinter.CTkLabel(self.frame, text=subtotal, text_color="black", width=90).grid(row=0, column=4, sticky="nsew", padx=(10,0), pady=(10,10))
-        customtkinter.CTkButton(self.frame, text="X", fg_color=RED, hover_color=RED_HOVER, width=30, command=self.delete).grid(row=0, column=6, sticky="ne", padx=(10,10), pady=(10,10))
+        customtkinter.CTkLabel(self.frame, text=cantidad, text_color="black", width=53).grid(row=0, column=0, sticky="nsew", padx=(0,10), pady=3)
+        customtkinter.CTkLabel(self.frame, text=codigo, text_color="black", width=150).grid(row=0, column=1, sticky="nsew", padx=10, pady=3)
+        customtkinter.CTkLabel(self.frame, text=descripcion, text_color="black", width=250).grid(row=0, column=2, sticky="nsew", padx=10, pady=3)
+        customtkinter.CTkLabel(self.frame, text=precio, text_color="black", width=90).grid(row=0, column=3, sticky="nsew", padx=10, pady=3)
+        customtkinter.CTkLabel(self.frame, text=subtotal, text_color="black", width=90).grid(row=0, column=4, sticky="nsew", padx=(10,0), pady=3)
+        customtkinter.CTkButton(self.frame, text="X", fg_color=RED, hover_color=RED_HOVER, width=30, command=self.delete).grid(row=0, column=6, sticky="ne", padx=(10,10), pady=3)
 
     def bind(self, row, column, padx, pady):
         self.frame.grid(row=row, column=column, padx=padx, pady=pady, sticky="nsew")
