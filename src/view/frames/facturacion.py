@@ -4,6 +4,8 @@ from .tab_frame import TabFrame
 
 from view.CTkRangeSlider import *
 import customtkinter
+from tkcalendar import Calendar, DateEntry
+from datetime import datetime as dt
 
 from ..constants import *
 
@@ -42,10 +44,29 @@ class FacturacionTab(TabFrame):
         self.frame.tkraise()
 
     def factura_data(self):
-        self.factura_data_frame = tk.Frame(self.frame, bg="red")
+        self.factura_data_frame = tk.Frame(self.frame, bg=WHITE)
         self.factura_data_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
 
-        customtkinter.CTkLabel(self.factura_data_frame, text=f"").grid(row=0, column=0, sticky="nsew", padx=10, pady=50)
+        customtkinter.CTkLabel(self.factura_data_frame, text="Cliente", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=0, column=0, sticky='w', padx=(10,0))
+        var_client = tk.StringVar(value="Seleccionar")
+        options_client = ["c1","c2","c3"]
+        client = customtkinter.CTkOptionMenu(self.factura_data_frame, width=220,dynamic_resizing=False, values=options_client,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_client)
+        client.grid(row = 0,column = 1, padx = 10, pady = 15,sticky='ew')
+
+
+        customtkinter.CTkLabel(self.factura_data_frame, text="Condición de Venta", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=0, column=2, sticky='w', padx=(25,0))
+        var_venta = tk.StringVar(value="Seleccionar")
+        options_venta = ["A","B","X"]
+        venta = customtkinter.CTkOptionMenu(self.factura_data_frame, width=220,dynamic_resizing=False, values=options_venta,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_venta)
+        venta.grid(row = 0,column = 3, padx = 10, pady = 15,sticky='ew')
+
+        curr_date = dt.today()
+        self.date_value = tk.StringVar(value=f"{curr_date.day}/{curr_date.month}/{str(curr_date.year)[-2:]}")
+        customtkinter.CTkLabel(self.factura_data_frame, text="Fecha", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=0, column=4, sticky='w', padx=(25,0))
+
+        calendar = DateEntry(self.factura_data_frame, date_pattern='dd/mm/yyyy', width=20, headersbackground=BLUE,headersforeground="white", font=(DEFAULT_FONT,11))
+        calendar.grid(row = 0,column = 5, padx = 10, pady = 15,sticky='ew') 
+        
 
     def factura_items(self):
         self.factura_items_frame = tk.Frame(self.frame, bg="red")
@@ -55,10 +76,10 @@ class FacturacionTab(TabFrame):
 
         screen_width = self.root.winfo_width()
 
-        self.factura_items_frame.list_frame = tk.Frame(self.factura_items_frame, bg="blue",width=screen_width*0.6)
+        self.factura_items_frame.list_frame = tk.Frame(self.factura_items_frame, bg="blue",width=screen_width*0.7)
         self.factura_items_frame.list_frame.grid(row=0, column=0, sticky="nsw")
 
-        self.factura_items_frame.pricing_frame = tk.Frame(self.factura_items_frame, bg="green", width=screen_width*0.4)
+        self.factura_items_frame.pricing_frame = tk.Frame(self.factura_items_frame, bg="green", width=screen_width*0.3)
         self.factura_items_frame.pricing_frame.grid(row=0, column=1, sticky="nse", padx=(10,0))
         
         self.items_list()
@@ -128,7 +149,7 @@ class FacturacionTab(TabFrame):
         self.canvas.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
         # self.canvas.grid_columnconfigure(0, weight=1)
         self.scrollable_frame.columnconfigure(0, weight=1)
-        scrollbar.grid(row=1, column=1, sticky="nse", padx=(5,0), pady=10)
+        scrollbar.grid(row=1, column=1, sticky="nse")
         self.curr_row=1
 
         #Events
