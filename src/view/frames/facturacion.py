@@ -64,7 +64,7 @@ class FacturacionTab(TabFrame):
         self.date_value = tk.StringVar(value=f"{curr_date.day}/{curr_date.month}/{str(curr_date.year)[-2:]}")
         customtkinter.CTkLabel(self.factura_data_frame, text="Fecha", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=0, column=4, sticky='w', padx=(25,0))
 
-        calendar = DateEntry(self.factura_data_frame, date_pattern='dd/mm/yyyy', width=20, headersbackground=BLUE,headersforeground="white", font=(DEFAULT_FONT,11))
+        calendar = DateEntry(self.factura_data_frame, locale="es_AR", date_pattern='dd/mm/yyyy', width=20, headersbackground=BLUE,headersforeground="white", font=(DEFAULT_FONT,11))
         calendar.grid(row = 0,column = 5, padx = 10, pady = 15,sticky='ew') 
         
 
