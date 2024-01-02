@@ -103,12 +103,12 @@ class Model():
                     "d3":r[9],
                     "d4":r[10],
                     "iva":r[11],
-                    "g1":r[12],
-                    "g2":r[13],
-                    "g3":r[14],
-                    "g4":r[15],
-                    "stock":r[16],
-                    "pto_reposicion":r[17]
+                    "g1":r[13],
+                    "g2":r[14],
+                    "g3":r[15],
+                    "g4":r[16],
+                    "stock":r[18],
+                    "pto_reposicion":r[19]
                 }
                 articulo = Articulo(data)
             return Response(True, articulo)
@@ -152,12 +152,12 @@ class Model():
                         "d3":r[9],
                         "d4":r[10],
                         "iva":r[11],
-                        "g1":r[12],
-                        "g2":r[13],
-                        "g3":r[14],
-                        "g4":r[15],
-                        "stock":r[16],
-                        "pto_reposicion":r[17]
+                        "g1":r[13],
+                        "g2":r[14],
+                        "g3":r[15],
+                        "g4":r[16],
+                        "stock":r[18],
+                        "pto_reposicion":r[19]
                     }
                     articulos.append(Articulo(data))
 

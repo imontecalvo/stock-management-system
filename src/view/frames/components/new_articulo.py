@@ -197,9 +197,7 @@ class NewArticulo():
                         v= 0 if self.fields_value[i].get()=="" else self.fields_value[i].get()
                 else:
                     v=self.fields_value[i].get()
-                # print(v)
                 values.append(v)
-            # print("values ", values)
             self.parent.add_articulo(values)
     
 

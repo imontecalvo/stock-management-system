@@ -9,8 +9,10 @@ from datetime import datetime as dt
 
 from ..constants import *
 
+PROPORCION_ITEM_LIST = 0.8
+
 class FacturacionTab(TabFrame):
-    def __init__(self, root, controller):
+    def __init__(self, root, controller,p,m,t):
         super().__init__(root, controller)
 
         #Configuracion de frame
@@ -18,8 +20,11 @@ class FacturacionTab(TabFrame):
         self.frame.grid(row=0, column=0, sticky="nsew")
         self.frame.columnconfigure(0, weight=1)
         self.frame.grid_rowconfigure(2, weight=1)
-    
         
+        self.proveedores = p
+        self.marcas = m
+        self.tipos = t
+
         #Titulo seccion
         headingLabel =  tk.Label(self.frame, text = 'Facturacion', font=HEADING_FONT,bg=HEADING_COLOR, foreground=WHITE  )
         headingLabel.grid(row = 0,column= 0,sticky="w",pady=10, padx=10)
@@ -30,12 +35,15 @@ class FacturacionTab(TabFrame):
         
         self.root.bind("<Configure>", self.on_resize)
 
-        # #Botones
-        self.button_canvas = tk.Canvas(self.frame, bg="white")
-        self.button_canvas.grid(row=3, column=0, sticky="sew", padx=10, pady=10)
-        customtkinter.CTkButton(self.button_canvas, text="Guardar", fg_color="green", command=lambda: print(self.items)).pack(side="left")
-
-
+        # Table Actions
+        self.actions_frame = tk.Frame(self.frame)
+        self.actions_frame.grid(row=3,column=0,sticky="sew")
+        self.actions_frame.columnconfigure(1, weight=1)
+        x = tk.Button(self.actions_frame, text="Limpiar campos", command=self.reset)
+        x.grid(row=0,column=0,padx=10, pady=10)
+        
+        self.delete_sel_button = customtkinter.CTkButton(self.actions_frame, text="Guardar factura", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=RED, hover_color=RED_HOVER, border_spacing=8)
+        self.delete_sel_button.grid(row=0,column=3,padx=10, pady=5)
 
 
     def show(self):
@@ -45,50 +53,92 @@ class FacturacionTab(TabFrame):
 
     def factura_data(self):
         self.factura_data_frame = tk.Frame(self.frame, bg=WHITE)
-        self.factura_data_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
+        self.factura_data_frame.grid(row=1, column=0, sticky="nsew", padx=5, pady=(10,5))
 
         customtkinter.CTkLabel(self.factura_data_frame, text="Cliente", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=0, column=0, sticky='w', padx=(10,0))
-        var_client = tk.StringVar(value="Seleccionar")
+        self.var_client = tk.StringVar(value="Seleccionar")
         options_client = ["c1","c2","c3"]
-        client = customtkinter.CTkOptionMenu(self.factura_data_frame, width=220,dynamic_resizing=False, values=options_client,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_client)
+        client = customtkinter.CTkOptionMenu(self.factura_data_frame, width=220,dynamic_resizing=False, values=options_client,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=self.var_client)
         client.grid(row = 0,column = 1, padx = 10, pady = 15,sticky='ew')
 
 
         customtkinter.CTkLabel(self.factura_data_frame, text="Condición de Venta", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=0, column=2, sticky='w', padx=(25,0))
-        var_venta = tk.StringVar(value="Seleccionar")
+        self.var_venta = tk.StringVar(value="Seleccionar")
         options_venta = ["A","B","X"]
-        venta = customtkinter.CTkOptionMenu(self.factura_data_frame, width=220,dynamic_resizing=False, values=options_venta,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_venta)
+        venta = customtkinter.CTkOptionMenu(self.factura_data_frame, width=220,dynamic_resizing=False, values=options_venta,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=self.var_venta)
         venta.grid(row = 0,column = 3, padx = 10, pady = 15,sticky='ew')
 
         curr_date = dt.today()
         self.date_value = tk.StringVar(value=f"{curr_date.day}/{curr_date.month}/{str(curr_date.year)[-2:]}")
         customtkinter.CTkLabel(self.factura_data_frame, text="Fecha", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=0, column=4, sticky='w', padx=(25,0))
 
-        calendar = DateEntry(self.factura_data_frame, locale="es_AR", date_pattern='dd/mm/yyyy', width=20, headersbackground=BLUE,headersforeground="white", font=(DEFAULT_FONT,11))
-        calendar.grid(row = 0,column = 5, padx = 10, pady = 15,sticky='ew') 
+        self.calendar = DateEntry(self.factura_data_frame, locale="es_AR", date_pattern='dd/mm/yyyy', width=20, headersbackground=BLUE,headersforeground="white", font=(DEFAULT_FONT,11))
+        self.calendar.grid(row = 0,column = 5, padx = 10, pady = 15,sticky='ew') 
         
 
     def factura_items(self):
-        self.factura_items_frame = tk.Frame(self.frame, bg="red")
-        self.factura_items_frame.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
+        self.factura_items_frame = customtkinter.CTkFrame(self.frame, fg_color="transparent")
+        self.factura_items_frame.grid(row=2, column=0, sticky="nsew", padx=5, pady=(0,5))
         self.factura_items_frame.grid_columnconfigure(0, weight=1)
         self.factura_items_frame.grid_rowconfigure(0, weight=1)
 
         screen_width = self.root.winfo_width()
 
-        self.factura_items_frame.list_frame = tk.Frame(self.factura_items_frame, bg="blue",width=screen_width*0.7)
+        self.factura_items_frame.list_frame = tk.Frame(self.factura_items_frame,width=screen_width*PROPORCION_ITEM_LIST)
         self.factura_items_frame.list_frame.grid(row=0, column=0, sticky="nsw")
 
-        self.factura_items_frame.pricing_frame = tk.Frame(self.factura_items_frame, bg="green", width=screen_width*0.3)
-        self.factura_items_frame.pricing_frame.grid(row=0, column=1, sticky="nse", padx=(10,0))
+        self.factura_items_frame.pricing_frame = tk.Frame(self.factura_items_frame, bg=WHITE, width=screen_width*(1-PROPORCION_ITEM_LIST))
+        self.factura_items_frame.pricing_frame.grid(row=0, column=1, sticky="nse", padx=(5,0))
         
         self.items_list()
+        self.factura_pricing()
 
     def factura_pricing(self):
-        factura_pricing_frame = tk.Frame(self.frame, bg="red")
-        factura_pricing_frame.grid(row=2, column=1, sticky="nse", padx=10, pady=10)
+        pricing_frame = self.factura_items_frame.pricing_frame
+        pricing_frame.grid_columnconfigure(1, weight=1)
 
-        customtkinter.CTkLabel(factura_pricing_frame, text=f"").grid(row=0, column=0, sticky="nsew", padx=10, pady=60)
+        customtkinter.CTkLabel(pricing_frame, text="", fg_color="transparent").grid(row=0,column=0, pady=15, sticky='w')
+        
+        self.subtotal_var = tk.StringVar(value="$ 0.00")
+        customtkinter.CTkLabel(pricing_frame, text="Subtotal", fg_color="transparent",text_color="black",font=('_',14)).grid(row=1,column=0, padx=(20,10), pady=5, sticky='w')
+        customtkinter.CTkLabel(pricing_frame, textvariable=self.subtotal_var, fg_color=LIGHT_GRAY,text_color="black",font=('_',14)).grid(row=1,column=1, padx=20, pady=15, columnspan=2,sticky='ew')
+
+        def entry_input(row, label, numeric=False, state="normal", default_value=""):
+            customtkinter.CTkLabel(pricing_frame, text=label, fg_color="transparent",text_color="black",font=('_',14)).grid(row=row,column=0, padx=(20,10), pady=5, sticky='w')
+            entry = customtkinter.CTkEntry(pricing_frame, state=state, fg_color="white", text_color="black", font=("_",13.5), textvariable=tk.StringVar(value=default_value))
+            entry.grid(row=row,column=1, padx=20, pady=15, columnspan=2,sticky='ew')
+            if numeric:
+                entry.configure(validate="key", validatecommand=(self.root.validate_numeric_input, "%P"))
+            return entry
+
+        self.iva_entry = entry_input(2, "IVA (%)", True, default_value="21")
+        self.interes_entry = entry_input(3, "Interes (%)", True, default_value="0")
+        self.descuento_entry = entry_input(4, "Descuento (%)", True, default_value="0")
+
+        ttk.Separator(pricing_frame, orient="horizontal").grid(row=5, column=0, columnspan=3, sticky="ew", pady=20)
+        customtkinter.CTkLabel(pricing_frame, text="TOTAL", fg_color="transparent",text_color="black",font=('_',14)).grid(row=6,column=0, padx=(20,10), pady=10, sticky='w')
+
+        total_var = tk.StringVar(value="$ 0.00")
+        customtkinter.CTkLabel(pricing_frame, textvariable=total_var, fg_color=LIGHT_GRAY,text_color="black",font=('_',14)).grid(row=6,column=1, padx=20, pady=20, columnspan=2,sticky='ew')
+
+        def update_total(total_var, iva_entry, interes_entry, descuento_entry):
+            subtotal = float(self.subtotal_var.get()[2:])
+            iva = float(iva_entry.get())
+            interes = float(interes_entry.get())
+            descuento = float(descuento_entry.get())
+            total_iva = subtotal + subtotal*(iva/100)
+            total_iva_int = total_iva + total_iva*(interes/100)
+            total = total_iva_int - total_iva_int*(descuento/100)
+            total_var.set(f"$ {round(total,2)}")
+
+        #Bindings de eventos
+        self.subtotal_var.trace_add("write", lambda x,y,z: update_total(total_var, self.iva_entry, self.interes_entry, self.descuento_entry))
+        self.iva_entry.bind("<KeyRelease>", lambda e: update_total(total_var, self.iva_entry, self.interes_entry, self.descuento_entry))
+        self.interes_entry.bind("<KeyRelease>", lambda e: update_total(total_var, self.iva_entry, self.interes_entry, self.descuento_entry))
+        self.descuento_entry.bind("<KeyRelease>", lambda e: update_total(total_var, self.iva_entry, self.interes_entry, self.descuento_entry))
+
+
+
 
     def new_articulo_row(self, cantidad, codigo, descripcion, precio, subtotal):
         articulo = FacturaArticuloRow(self, codigo, descripcion, precio, cantidad, subtotal)
@@ -101,26 +151,80 @@ class FacturacionTab(TabFrame):
         self.items[self.curr_id]=(cantidad, codigo, descripcion, precio, subtotal)
         self.curr_id+=1
 
+        new_subtotal = float(self.subtotal_var.get()[2:])+float(subtotal[2:])
+        self.subtotal_var.set(f"$ {round(new_subtotal,2)}")
+
+    def remove_item(self, id, subtotal_item):
+        del self.items[id]
+        new_subtotal = float(self.subtotal_var.get()[2:])-float(subtotal_item[2:])
+        self.subtotal_var.set(f"$ {round(new_subtotal,2)}")
+        
 
     def on_resize(self, event):
         screen_width = self.root.winfo_width()
 
         # Actualizar el ancho del Frame
-        self.factura_items_frame.list_frame.config(width=screen_width*0.7)
-        self.factura_items_frame.pricing_frame.config(width=screen_width*0.3)
+        self.factura_items_frame.list_frame.config(width=screen_width*PROPORCION_ITEM_LIST)
+        self.factura_items_frame.pricing_frame.config(width=screen_width*(1-PROPORCION_ITEM_LIST))
+
+    def set_filters(self, frame_row):
+        frame = tk.Frame(self.factura_items_frame.list_frame, bg=WHITE)
+        frame.grid(row=frame_row, column=0, sticky='w')
+        
+        row=0
+
+        pady=5
+        tk.Label(frame, text="Filtrar", font="arial 14 bold", bg=WHITE).grid(row=row, column=0, sticky='nw', padx= 5, pady=pady)
+
+        # Proveedor
+        customtkinter.CTkLabel(frame, text="Proveedor", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=row, column=1, sticky='w',padx= (10,0),pady=pady)
+        var_supplier_filter = tk.StringVar(value="Todos los proveedores")
+        options_supplier = ["Todos los proveedores"]+self.get_field_options("Proveedor")
+        self.proveedores_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_supplier,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_supplier_filter)
+        self.proveedores_menu.grid(row=row ,column = 2, padx = (5,30), pady=pady,sticky='ew')
+
+        # Marca
+        customtkinter.CTkLabel(frame, text="Marca", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=row, column=3, sticky='w',padx= (10,0),pady=pady)
+        var_brand_filter = tk.StringVar(value="Todos las marcas")
+        options_brand = ["Todas las marcas"]+self.get_field_options("Marca")
+        self.marcas_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_brand,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_brand_filter)
+        self.marcas_menu.grid(row=row ,column = 4, padx = (5,30), pady=pady,sticky='ew')
+
+        # Tipo
+        customtkinter.CTkLabel(frame, text="Tipo", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=row, column=5, sticky='w',padx= (10,0),pady=pady)
+        var_type_filter = tk.StringVar(value="Todos los tipos")
+        options_types = ["Todos los tipos"]+self.get_field_options("Tipo")
+        self.tipos_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_types,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_type_filter)
+        self.tipos_menu.grid(row=row ,column = 6, padx = (5,30), pady=pady,sticky='ew')
+
+    def get_field_options(self, field):
+            if field == "Proveedor":
+                return [MISSING_VALUE]+list(self.proveedores.data.values())
+            elif field == "Marca":
+                return [MISSING_VALUE]+list(self.marcas.data.values())
+            elif field == "Tipo":
+                return [MISSING_VALUE]+list(self.tipos.data.values())
+            return ["error"]
+
 
     def items_list(self):
         COLOR_BG = "white"
         self.curr_id = 0
         self.items = {}
+        row = 0
+
+        #Filter by Proveedor, Marca, Tipo
+        self.set_filters(row)
+        row+=1
 
         #Frame seccion
         self.factura_items_frame.list_frame.grid_columnconfigure(0, weight=1)
-        self.factura_items_frame.list_frame.grid_rowconfigure(1, weight=1)
+        self.factura_items_frame.list_frame.grid_rowconfigure(2, weight=1)
 
         #Top frame
         header = HeaderItems(self)
-        header.grid(0,0)
+        header.grid(row,0)
+        row+=1
 
         #Lista de items
         self.canvas = tk.Canvas(self.factura_items_frame.list_frame, bg=COLOR_BG)
@@ -146,10 +250,10 @@ class FacturacionTab(TabFrame):
         self.canvas.bind_all("<Button-4>", self._on_mousewheel)  # Para sistemas Linux
         self.canvas.bind_all("<Button-5>", self._on_mousewheel)  # Para sistemas Linux
 
-        self.canvas.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
-        # self.canvas.grid_columnconfigure(0, weight=1)
+        self.canvas.grid(row=row, column=0, sticky="nsew", padx=0, pady=0)
         self.scrollable_frame.columnconfigure(0, weight=1)
-        scrollbar.grid(row=1, column=1, sticky="nse")
+        scrollbar.grid(row=row, column=1, sticky="nse")
+        row+=1
         self.curr_row=1
 
         #Events
@@ -161,6 +265,30 @@ class FacturacionTab(TabFrame):
         factor = 1 if event.num == 5 else -1
         self.canvas.yview_scroll(int(factor * 2), "units")
 
+    def reset(self):
+        self.curr_id = 0
+        self.items = {}
+        self.curr_row=1
+        self.subtotal_var.set("$ 0.00")
+        for widget in self.scrollable_frame.winfo_children():
+            widget.destroy()
+
+        self.var_client.set("Seleccionar")
+        self.var_venta.set("Seleccionar")
+        self.calendar.set_date(dt.today())
+
+        self.iva_entry.configure(textvariable=tk.StringVar(value="21"))
+        self.interes_entry.configure(textvariable=tk.StringVar(value="0"))
+        self.descuento_entry.configure(textvariable=tk.StringVar(value="0"))
+
+    #Recibe un campo (Proveedor, Marca o Tipo) y actualiza los dropdowns menus de la tab de Facturacion
+    def update_options(self, field):
+        if field == "Proveedor":
+            self.proveedores_menu.configure(values=["Todos los proveedores"]+self.get_field_options("Proveedor"))
+        elif field == "Marca":
+            self.marcas_menu.configure(values=["Todas las marcas"]+self.get_field_options("Marca"))
+        elif field == "Tipo":
+            self.tipos_menu.configure(values=["Todos los tipos"]+self.get_field_options("Tipo"))
 
 class HeaderItems:
     def __init__(self, parent):
@@ -327,11 +455,12 @@ class FacturaArticuloRow():
         customtkinter.CTkLabel(self.frame, text=descripcion, text_color="black", width=250).grid(row=0, column=2, sticky="nsew", padx=10, pady=3)
         customtkinter.CTkLabel(self.frame, text=precio, text_color="black", width=90).grid(row=0, column=3, sticky="nsew", padx=10, pady=3)
         customtkinter.CTkLabel(self.frame, text=subtotal, text_color="black", width=90).grid(row=0, column=4, sticky="nsew", padx=(10,0), pady=3)
-        customtkinter.CTkButton(self.frame, text="X", fg_color=RED, hover_color=RED_HOVER, width=30, command=self.delete).grid(row=0, column=6, sticky="ne", padx=(10,10), pady=3)
+        customtkinter.CTkButton(self.frame, text="X", fg_color=RED, hover_color=RED_HOVER, width=30, command=lambda: self.delete(subtotal)).grid(row=0, column=6, sticky="ne", padx=(10,10), pady=3)
 
     def bind(self, row, column, padx, pady):
         self.frame.grid(row=row, column=column, padx=padx, pady=pady, sticky="nsew")
 
-    def delete(self):
-        del self.parent.items[self.id]
+    def delete(self, subtotal):
+        self.parent.remove_item(self.id, subtotal)
         self.frame.destroy()
+

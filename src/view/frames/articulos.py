@@ -20,7 +20,7 @@ class ArticulosTab(TabFrame):
     def update_price_range(self, value):
         self.price_filter.config(text=f"${value[0]} - ${value[1]}")
 
-    def __init__(self, root, controller):
+    def __init__(self, root, controller, p,m,t):
         super().__init__(root, controller)
 
         #Configuracion de frame
@@ -29,9 +29,9 @@ class ArticulosTab(TabFrame):
         self.frame.columnconfigure(0, weight=1)
 
         #(ID:Nombre) de Proveedores, marcas y tipos cargados en memoria
-        self.proveedores = self.get_proveedores()
-        self.marcas = self.get_marcas()
-        self.tipos = self.get_tipos()
+        self.proveedores = p
+        self.marcas = m
+        self.tipos = t
         
         #Titulo seccion
         headingLabel =  tk.Label(self.frame, text = 'Articulos', font=HEADING_FONT,bg=HEADING_COLOR, foreground=WHITE  )
@@ -61,7 +61,7 @@ class ArticulosTab(TabFrame):
         self.actions_frame = tk.Frame(self.frame)
         self.actions_frame.grid(row=4,column=0,sticky="ew")
         self.actions_frame.columnconfigure(1, weight=1)
-        x = tk.Button(self.actions_frame, text="Seleccionar todo", command=lambda: print(self.tree.height()))
+        x = tk.Button(self.actions_frame, text="Seleccionar todo")
         x.grid(row=0,column=0,padx=10, pady=10)
 
         self.edit_button = customtkinter.CTkButton(self.actions_frame, text="Editar", command=self.open_edit_articulo_modal, state="disabled", corner_radius=6, font=(DEFAULT_FONT,14), fg_color=YELLOW, hover_color=YELLOW_HOVER, border_spacing=8, width=30)
@@ -104,9 +104,9 @@ class ArticulosTab(TabFrame):
                 self.tree.separators[i].grid(row=1, column=0, ipady=300, pady=20, sticky='w', padx=(total_width,0))
 
     def get_data_to_insert(self,a):
-        proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else MISSING_VALUE
-        marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else MISSING_VALUE
-        tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else MISSING_VALUE
+        proveedor = self.proveedores.data[a.id_proveedor] if a.id_proveedor and self.proveedores.contains(a.id_proveedor) else MISSING_VALUE
+        marca = self.marcas.data[a.id_marca] if a.id_marca and self.marcas.contains(a.id_marca) else MISSING_VALUE
+        tipo = self.tipos.data[a.id_tipo] if a.id_tipo and self.tipos.contains(a.id_tipo) else MISSING_VALUE
         return (a.id, a.descripcion, proveedor, marca, tipo, a.precio_lista, a.stock, a.pto_reposicion)
     
     def initialize_page_bar(self):
@@ -135,9 +135,9 @@ class ArticulosTab(TabFrame):
         if r.ok:
             articulos = r.content
             for a in articulos:
-                proveedor = self.proveedores[a.id_proveedor] if a.id_proveedor and a.id_proveedor in self.proveedores.keys() else MISSING_VALUE
-                marca = self.marcas[a.id_marca] if a.id_marca and a.id_marca in self.marcas.keys() else MISSING_VALUE
-                tipo = self.tipos[a.id_tipo] if a.id_tipo and a.id_tipo in self.tipos.keys() else MISSING_VALUE
+                proveedor = self.proveedores.data[a.id_proveedor] if a.id_proveedor and self.proveedores.contains(a.id_proveedor) else MISSING_VALUE
+                marca = self.marcas.data[a.id_marca] if a.id_marca and self.marcas.contains(a.id_marca) else MISSING_VALUE
+                tipo = self.tipos.data[a.id_tipo] if a.id_tipo and self.tipos.contains(a.id_tipo) else MISSING_VALUE
                 data = (a.codigo, a.descripcion, proveedor, marca, tipo, a.precio_costo, a.precio_venta)
                 self.tree.insert(a.id, data)
         else:
@@ -172,9 +172,9 @@ class ArticulosTab(TabFrame):
     #Recibe un diccionario con los valores de un articulo a agregar y lo añade a la base de datos
     #En caso de error, se muestra el mensaje en un pop up
     def add_articulo(self, fields):
-        id_proveedor = None if fields[2]==MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2])
-        id_marca = None if fields[3]==MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3])
-        id_tipo = None if fields[4]==MISSING_VALUE else self.get_id_from_value(self.tipos, fields[4])
+        id_proveedor = None if fields[2]==MISSING_VALUE else self.get_id_from_value(self.proveedores.data, fields[2])
+        id_marca = None if fields[3]==MISSING_VALUE else self.get_id_from_value(self.marcas.data, fields[3])
+        id_tipo = None if fields[4]==MISSING_VALUE else self.get_id_from_value(self.tipos.data, fields[4])
 
         values = {
             "codigo":fields[0],
@@ -229,9 +229,9 @@ class ArticulosTab(TabFrame):
     #Recibe id y campos del articulo a editar y lo edita en la base de datos, luego cierra modal
     #En caso de error, muestra el mensaje en un pop up
     def update_articulo(self, id, fields):
-        id_proveedor = None if fields[2]==MISSING_VALUE else self.get_id_from_value(self.proveedores, fields[2])
-        id_marca = None if fields[3]==MISSING_VALUE else self.get_id_from_value(self.marcas, fields[3])
-        id_tipo = None if fields[4]==MISSING_VALUE else self.get_id_from_value(self.tipos, fields[4])
+        id_proveedor = None if fields[2]==MISSING_VALUE else self.get_id_from_value(self.proveedores.data, fields[2])
+        id_marca = None if fields[3]==MISSING_VALUE else self.get_id_from_value(self.marcas.data, fields[3])
+        id_tipo = None if fields[4]==MISSING_VALUE else self.get_id_from_value(self.tipos.data, fields[4])
 
         values = {
             "id":id,
@@ -261,52 +261,52 @@ class ArticulosTab(TabFrame):
             ErrorWindow(r.content, self.root)    
 
 
-    #Obtiene la lista de proveedores de la base de datos
-    def get_proveedores(self):
-        proveedores_dic = {}
+    # #Obtiene la lista de proveedores de la base de datos
+    # def get_proveedores(self):
+    #     proveedores_dic = {}
         
-        r = self.controller.get_proveedores()
-        if r.ok:
-            proveedores=r.content
-            for p in proveedores:
-                proveedores_dic[p.id]=p.nombre
-        else:
-            self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
-        return proveedores_dic
+    #     r = self.controller.get_proveedores()
+    #     if r.ok:
+    #         proveedores=r.content
+    #         for p in proveedores:
+    #             proveedores_dic[p.id]=p.nombre
+    #     else:
+    #         self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
+    #     return proveedores_dic
     
-    #Obtiene la lista de marcas de la base de datos
-    def get_marcas(self):
-        marcas_dic = {}
-        r = self.controller.get_marcas()
-        if r.ok:
-            marcas = r.content
-            for m in marcas:
-                marcas_dic[m.id]=m.nombre
-        else:
-            self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
-        return marcas_dic
+    # #Obtiene la lista de marcas de la base de datos
+    # def get_marcas(self):
+    #     marcas_dic = {}
+    #     r = self.controller.get_marcas()
+    #     if r.ok:
+    #         marcas = r.content
+    #         for m in marcas:
+    #             marcas_dic[m.id]=m.nombre
+    #     else:
+    #         self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
+    #     return marcas_dic
     
-    #Obtiene la lista de tipos de la base de datos
-    def get_tipos(self):
-        tipos_dic = {}
-        r = self.controller.get_tipos()
-        if r.ok:
-            tipos = r.content
-            for t in tipos:
-                tipos_dic[t.id]=t.nombre
-        else:
-            self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
-        return tipos_dic
+    # #Obtiene la lista de tipos de la base de datos
+    # def get_tipos(self):
+    #     tipos_dic = {}
+    #     r = self.controller.get_tipos()
+    #     if r.ok:
+    #         tipos = r.content
+    #         for t in tipos:
+    #             tipos_dic[t.id]=t.nombre
+    #     else:
+    #         self.frame.after(500, lambda: ErrorWindow(r.content,self.frame))
+    #     return tipos_dic
     
     #Devuelve la lista de opciones de proveedores, marca o tipo para los dropdown menus
     #Concatena el valor "Sin especificar" a la lista de valores extraida de la base de datos
     def get_field_options(self, field):
             if field == "Proveedor":
-                return [MISSING_VALUE]+list(self.proveedores.values())
+                return [MISSING_VALUE]+list(self.proveedores.data.values())
             elif field == "Marca":
-                return [MISSING_VALUE]+list(self.marcas.values())
+                return [MISSING_VALUE]+list(self.marcas.data.values())
             elif field == "Tipo":
-                return [MISSING_VALUE]+list(self.tipos.values())
+                return [MISSING_VALUE]+list(self.tipos.data.values())
             return ["error"]
     
     #Dado un diccionario y un valor, obtiene la clave
@@ -332,9 +332,7 @@ class ArticulosTab(TabFrame):
         if r.ok:
             id=r.content["id"]
             name=r.content["name"]
-            self.proveedores[id]=name
-            #TODO actualizar proveedores en filtros
-            self.filters.update_options("Proveedor")
+            self.proveedores.add(id,name)
             return Response(True)
         return Response(False, "ERROR: Proveedor ya existente.")
         
@@ -347,8 +345,7 @@ class ArticulosTab(TabFrame):
         if r.ok:
             id=r.content["id"]
             name=r.content["name"]
-            self.marcas[id]=name
-            self.filters.update_options("Marca")
+            self.marcas.add(id,name)
             return Response(True)
         return Response(False, "ERROR: Marca ya existente.")
     
@@ -361,13 +358,19 @@ class ArticulosTab(TabFrame):
         if r.ok:
             id=r.content["id"]
             name=r.content["name"]
-            self.tipos[id]=name
-            self.filters.update_options("Tipo")
+            self.tipos.add(id,name)
             return Response(True)
         return Response(False, "ERROR: Tipo de producto ya existente.")
-        
+    
 
-"""
+    #Recibe un campo (Proveedor, Marca o Tipo) y actualiza los dropdowns menus de la tab de Articulos
+    def update_options(self, field):
+        self.filters.update_options(field)
+        self.new_articulo_modal.update_options(field)
+        self.edit_articulo_modal.update_options(field)
+
+
+"""P
 root
  L frameArticulos ->r=0
     L frame1 -> r=0

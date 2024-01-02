@@ -243,9 +243,9 @@ class EditArticulo():
             if idx not in [IDX_SUPPLIER, IDX_BRAND, IDX_TYPE, IDX_DISCOUNT, IDX_REVENUES]:
                 field.delete(0, "end")
 
-        proveedor = self.parent.proveedores[articulo.id_proveedor] if articulo.id_proveedor else MISSING_VALUE
-        marca = self.parent.marcas[articulo.id_marca] if articulo.id_marca else MISSING_VALUE
-        tipo = self.parent.tipos[articulo.id_tipo] if articulo.id_tipo else MISSING_VALUE
+        proveedor = self.parent.proveedores.data[articulo.id_proveedor] if articulo.id_proveedor else MISSING_VALUE
+        marca = self.parent.marcas.data[articulo.id_marca] if articulo.id_marca else MISSING_VALUE
+        tipo = self.parent.tipos.data[articulo.id_tipo] if articulo.id_tipo else MISSING_VALUE
 
         self.fields_value[IDX_CODE].insert(0,articulo.codigo)
         self.fields_value[IDX_DESCRIPTION].insert(0,articulo.descripcion)
