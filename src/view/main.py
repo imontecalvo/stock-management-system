@@ -4,6 +4,7 @@ from .frames.articulos import ArticulosTab
 from .frames.proveedores import ProveedoresTab
 from .frames.facturacion import FacturacionTab
 from .frames.components.error_window import ErrorWindow
+from .constants import *
 
 class View():
     def __init__(self, controller):
@@ -138,3 +139,16 @@ class SharedData():
     def contains(self, key):
         return key in self.data.keys()
     
+    #Dado un diccionario y un valor, obtiene la clave
+    #Lo usamos en dropdown menus para obtener el ID a partir del nombre de Proveedores, marcas o tipos
+    def get_id_from_value(self, value):
+        no_filters = NO_FILT_PROVEEDOR if self.field == "Proveedor" else NO_FILT_MARCA if self.field == "Marca" else NO_FILT_TIPO 
+        if value == no_filters:
+            return ""
+        if value == MISSING_VALUE:
+            return None
+        
+        for k,v in self.data.items():
+            if v == value:
+                return k
+        return None

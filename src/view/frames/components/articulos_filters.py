@@ -31,15 +31,6 @@ class ArticulosFilter():
         self.brand, brand_var = self.set_brand_filter()
         self.type, type_var =  self.set_type_filter()
 
-        # #PRECIO
-        # customtkinter.CTkLabel(self.filter_frame, text="Precio", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=3, column=4, sticky='w', padx=(25,5))
-
-        # range_slider = CTkRangeSlider(self.filter_frame, command=self.update_price_range)
-        # range_slider.grid(row = 3,column=5, padx = 10, pady = 5,sticky='w')
-        
-        # self.price_filter = tk.Label(self.filter_frame, text="$0 - $1", bg=WHITE)
-        # self.price_filter.grid(row=3, column=6, sticky='w')
-
         self.filter_entries = [description, code, supplier_var, brand_var, type_var]
         self.default_filters = self.filters_dic.copy() #Diccionario con los filtros default
 
@@ -65,8 +56,8 @@ class ArticulosFilter():
     def set_supplier_filter(self):
         customtkinter.CTkLabel(self.filter_frame, text="Proveedor", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=4, column=0, sticky='w',padx= (10,0))
         var_supplier = tk.StringVar(self.filter_frame)
-        var_supplier.set("Todos los proveedores")
-        options_supplier = ["Todos los proveedores"]+self.parent.get_field_options("Proveedor")
+        var_supplier.set(NO_FILT_PROVEEDOR)
+        options_supplier = [NO_FILT_PROVEEDOR]+self.parent.get_field_options("Proveedor")
         supplier = customtkinter.CTkOptionMenu(self.filter_frame, width=220,dynamic_resizing=False, values=options_supplier,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_supplier,command=lambda event: self.changes_in_filters("id_proveedor",self.menu_value_to_id(var_supplier.get(),self.parent.proveedores)))
         supplier.grid(row = 4,column = 1, padx = (5,30), pady = (7,15),sticky='ew')
         self.filters_dic["id_proveedor"]=self.menu_value_to_id(var_supplier.get(),self.parent.proveedores)
@@ -76,8 +67,8 @@ class ArticulosFilter():
     def set_brand_filter(self):
         customtkinter.CTkLabel(self.filter_frame, text="Marca", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=4, column=2, sticky='w')
         var_brand = tk.StringVar(self.filter_frame)
-        var_brand.set("Todas las marcas")
-        options_brand = ["Todas las marcas"]+self.parent.get_field_options("Marca")
+        var_brand.set(NO_FILT_MARCA)
+        options_brand = [NO_FILT_MARCA]+self.parent.get_field_options("Marca")
         brand = customtkinter.CTkOptionMenu(self.filter_frame, width=220,dynamic_resizing=False, values=options_brand,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_brand,command=lambda event: self.changes_in_filters("id_marca",self.menu_value_to_id(var_brand.get(),self.parent.marcas)))
         brand.grid(row = 4,column = 3, padx = 10, pady = (7,15),sticky='ew')
         self.filters_dic["id_marca"]=self.menu_value_to_id(var_brand.get(),self.parent.marcas)
@@ -87,8 +78,8 @@ class ArticulosFilter():
     def set_type_filter(self):
         customtkinter.CTkLabel(self.filter_frame, text="Tipo", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=4, column=4, sticky='w', padx=(25,0))
         var_type = tk.StringVar(self.filter_frame)
-        var_type.set("Todos los tipos")
-        options_type = ["Todos los tipos"]+self.parent.get_field_options("Tipo")
+        var_type.set(NO_FILT_TIPO)
+        options_type = [NO_FILT_TIPO]+self.parent.get_field_options("Tipo")
         type = customtkinter.CTkOptionMenu(self.filter_frame, width=220,dynamic_resizing=False, values=options_type,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_type,command=lambda event: self.changes_in_filters("id_tipo",self.menu_value_to_id(var_type.get(),self.parent.tipos)))
         type.grid(row = 4,column = 5, padx = 10, pady = (7,15),sticky='ew')
         self.filters_dic["id_tipo"]=self.menu_value_to_id(var_type.get(),self.parent.tipos)
@@ -114,31 +105,31 @@ class ArticulosFilter():
 
         self.filter_entries[0].delete(0,"end")
         self.filter_entries[1].delete(0,"end")
-        self.filter_entries[2].set("Todos los proveedores")
-        self.filter_entries[3].set("Todas las marcas")
-        self.filter_entries[4].set("Todos los tipos")
+        self.filter_entries[2].set(NO_FILT_PROVEEDOR)
+        self.filter_entries[3].set(NO_FILT_MARCA)
+        self.filter_entries[4].set(NO_FILT_TIPO)
 
         self.parent.new_filters()
 
     #Devuelve el ID de un determinado valor para los filtros de dropdown menu.
     #En caso de que sean "Todos los X" devuelve string vacio, sino llama a parent.get_id_from_value
     def menu_value_to_id(self,value, dict):
-        if value in ["Todos los proveedores","Todas las marcas","Todos los tipos"]:
+        if value in [NO_FILT_PROVEEDOR,NO_FILT_MARCA,NO_FILT_TIPO]:
             return ""
         if value == MISSING_VALUE:
             return None
-        return self.parent.get_id_from_value(dict,value)
+        return self.parent.get_id_from_value(dict.data,value)
     
     
     def update_options(self, field):
         options = self.parent.get_field_options(field)
 
         if field=="Proveedor":
-            self.supplier.configure(values=["Todos los proveedores"]+options)
+            self.supplier.configure(values=[NO_FILT_PROVEEDOR]+options)
         elif field=="Marca":
             self.brand.configure(values=["Todos las marcas"]+options)
         else:
-            self.type.configure(values=["Todos los tipos"]+options)
+            self.type.configure(values=[NO_FILT_TIPO]+options)
 
 
     def get_values(self):

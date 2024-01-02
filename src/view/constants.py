@@ -25,6 +25,10 @@ JUMP_2_FIRST_PAGE = -2
 SAME_PAGE = 0
 ROW_HEIGHT = 20
 
+NO_FILT_PROVEEDOR = "Todos los proveedores"
+NO_FILT_MARCA = "Todas las marcas"
+NO_FILT_TIPO = "Todos los tipos"
+
 #Indice Campos en Modal Articulo
 IDX_CODE=0
 IDX_DESCRIPTION=1

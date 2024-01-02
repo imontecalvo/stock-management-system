@@ -178,22 +178,22 @@ class FacturacionTab(TabFrame):
 
         # Proveedor
         customtkinter.CTkLabel(frame, text="Proveedor", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=row, column=1, sticky='w',padx= (10,0),pady=pady)
-        self.var_supplier_filter = tk.StringVar(value="Todos los proveedores")
-        options_supplier = ["Todos los proveedores"]+self.get_field_options("Proveedor")
+        self.var_supplier_filter = tk.StringVar(value=NO_FILT_PROVEEDOR)
+        options_supplier = [NO_FILT_PROVEEDOR]+self.get_field_options("Proveedor")
         self.proveedores_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_supplier,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=self.var_supplier_filter,fg_color=LIGHT_GRAY, button_color=GRAY1,button_hover_color=GRAY2,text_color="black")
         self.proveedores_menu.grid(row=row ,column = 2, padx = (5,30), pady=pady,sticky='ew')
 
         # Marca
         customtkinter.CTkLabel(frame, text="Marca", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=row, column=3, sticky='w',padx= (10,0),pady=pady)
-        self.var_brand_filter = tk.StringVar(value="Todos las marcas")
-        options_brand = ["Todas las marcas"]+self.get_field_options("Marca")
+        self.var_brand_filter = tk.StringVar(value=NO_FILT_MARCA)
+        options_brand = [NO_FILT_MARCA]+self.get_field_options("Marca")
         self.marcas_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_brand,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=self.var_brand_filter,fg_color=LIGHT_GRAY, button_color=GRAY1,button_hover_color=GRAY2, text_color="black")
         self.marcas_menu.grid(row=row ,column = 4, padx = (5,30), pady=pady,sticky='ew')
 
         # Tipo
         customtkinter.CTkLabel(frame, text="Tipo", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=row, column=5, sticky='w',padx= (10,0),pady=pady)
-        self.var_type_filter = tk.StringVar(value="Todos los tipos")
-        options_types = ["Todos los tipos"]+self.get_field_options("Tipo")
+        self.var_type_filter = tk.StringVar(value=NO_FILT_TIPO)
+        options_types = [NO_FILT_TIPO]+self.get_field_options("Tipo")
         self.tipos_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_types,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=self.var_type_filter, fg_color=LIGHT_GRAY, button_color=GRAY1,button_hover_color=GRAY2, text_color="black")
         self.tipos_menu.grid(row=row ,column = 6, padx = (5,30), pady=pady,sticky='ew')
 
@@ -281,18 +281,18 @@ class FacturacionTab(TabFrame):
         self.interes_entry.configure(textvariable=tk.StringVar(value="0"))
         self.descuento_entry.configure(textvariable=tk.StringVar(value="0"))
 
-        self.var_supplier_filter.set("Todos los proveedores")
-        self.var_brand_filter.set("Todas las marcas")
-        self.var_type_filter.set("Todos los tipos")
+        self.var_supplier_filter.set(NO_FILT_PROVEEDOR)
+        self.var_brand_filter.set(NO_FILT_MARCA)
+        self.var_type_filter.set(NO_FILT_TIPO)
 
     #Recibe un campo (Proveedor, Marca o Tipo) y actualiza los dropdowns menus de la tab de Facturacion
     def update_options(self, field):
         if field == "Proveedor":
-            self.proveedores_menu.configure(values=["Todos los proveedores"]+self.get_field_options("Proveedor"))
+            self.proveedores_menu.configure(values=[NO_FILT_PROVEEDOR]+self.get_field_options("Proveedor"))
         elif field == "Marca":
-            self.marcas_menu.configure(values=["Todas las marcas"]+self.get_field_options("Marca"))
+            self.marcas_menu.configure(values=[NO_FILT_MARCA]+self.get_field_options("Marca"))
         elif field == "Tipo":
-            self.tipos_menu.configure(values=["Todos los tipos"]+self.get_field_options("Tipo"))
+            self.tipos_menu.configure(values=[NO_FILT_TIPO]+self.get_field_options("Tipo"))
 
 class HeaderItems:
     def __init__(self, parent):
@@ -367,7 +367,15 @@ class HeaderItems:
             linked_widget.changed_by_user = False
             LIMIT, OFFSET = 10, 0
             value = widget.get()
-            r = self.parent.controller.get_articulos_in_range(LIMIT, OFFSET, filters={field:value}, cols=["codigo","descripcion","precio_venta"])
+
+            #Armo diccionario de filtros
+            supplier_filter = self.parent.proveedores.get_id_from_value(self.parent.var_supplier_filter.get())
+            brand_filter = self.parent.marcas.get_id_from_value(self.parent.var_brand_filter.get())
+            type_filter = self.parent.tipos.get_id_from_value(self.parent.var_type_filter.get())
+            filters = {field:value, "id_proveedor":supplier_filter, "id_marca":brand_filter, "id_tipo":type_filter}
+
+            #Mando consulta a db y actualizo opciones del menu con los resultados obtenidos.
+            r = self.parent.controller.get_articulos_in_range(LIMIT, OFFSET, filters=filters, cols=["codigo","descripcion","precio_venta"])
             if r.ok:
                 options=r.content
                 codigos, descripciones, precios= zip(*options) if options else [(),(),()]
@@ -376,7 +384,6 @@ class HeaderItems:
                 
                 value = value.upper()
                 options = [o.upper() for o in options]
-                
                 if value not in options:
                     linked_widget.var.set("")
                     linked_widget.menu.delete(0, "end")
@@ -413,6 +420,7 @@ class EntryWithSuggestions:
         self.menu = tk.Menu(self.entry, tearoff=0)
         self.menu.config(bg =WHITE,fg='black',activebackground=BLUE,activeforeground='white')
         self.entry.bind("<FocusOut>", self.hide_menu)
+        self.entry.bind("<KeyRelease>", self.show_menu)
 
     def set_options(self, options):
         self.menu.delete(0, "end") #Limpia las opciones ya cargadas

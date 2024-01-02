@@ -172,9 +172,9 @@ class ArticulosTab(TabFrame):
     #Recibe un diccionario con los valores de un articulo a agregar y lo añade a la base de datos
     #En caso de error, se muestra el mensaje en un pop up
     def add_articulo(self, fields):
-        id_proveedor = None if fields[2]==MISSING_VALUE else self.get_id_from_value(self.proveedores.data, fields[2])
-        id_marca = None if fields[3]==MISSING_VALUE else self.get_id_from_value(self.marcas.data, fields[3])
-        id_tipo = None if fields[4]==MISSING_VALUE else self.get_id_from_value(self.tipos.data, fields[4])
+        id_proveedor = None if fields[2]==MISSING_VALUE else self.proveedores.get_id_from_value(fields[2])
+        id_marca = None if fields[3]==MISSING_VALUE else self.marcas.get_id_from_value(fields[3])
+        id_tipo = None if fields[4]==MISSING_VALUE else self.tipos.get_id_from_value(fields[4])
 
         values = {
             "codigo":fields[0],
@@ -229,9 +229,9 @@ class ArticulosTab(TabFrame):
     #Recibe id y campos del articulo a editar y lo edita en la base de datos, luego cierra modal
     #En caso de error, muestra el mensaje en un pop up
     def update_articulo(self, id, fields):
-        id_proveedor = None if fields[2]==MISSING_VALUE else self.get_id_from_value(self.proveedores.data, fields[2])
-        id_marca = None if fields[3]==MISSING_VALUE else self.get_id_from_value(self.marcas.data, fields[3])
-        id_tipo = None if fields[4]==MISSING_VALUE else self.get_id_from_value(self.tipos.data, fields[4])
+        id_proveedor = None if fields[2]==MISSING_VALUE else self.proveedores.get_id_from_value(fields[2])
+        id_marca = None if fields[3]==MISSING_VALUE else self.marcas.get_id_from_value(fields[3])
+        id_tipo = None if fields[4]==MISSING_VALUE else self.tipos.get_id_from_value(fields[4])
 
         values = {
             "id":id,
