@@ -169,32 +169,32 @@ class FacturacionTab(TabFrame):
 
     def set_filters(self, frame_row):
         frame = tk.Frame(self.factura_items_frame.list_frame, bg=WHITE)
-        frame.grid(row=frame_row, column=0, sticky='w')
+        frame.grid(row=frame_row, column=0, sticky='ew')
         
         row=0
 
-        pady=5
+        pady=10
         tk.Label(frame, text="Filtrar", font="arial 14 bold", bg=WHITE).grid(row=row, column=0, sticky='nw', padx= 5, pady=pady)
 
         # Proveedor
         customtkinter.CTkLabel(frame, text="Proveedor", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=row, column=1, sticky='w',padx= (10,0),pady=pady)
         var_supplier_filter = tk.StringVar(value="Todos los proveedores")
         options_supplier = ["Todos los proveedores"]+self.get_field_options("Proveedor")
-        self.proveedores_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_supplier,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_supplier_filter)
+        self.proveedores_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_supplier,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_supplier_filter,fg_color=LIGHT_GRAY, button_color=GRAY1,button_hover_color=GRAY2,text_color="black")
         self.proveedores_menu.grid(row=row ,column = 2, padx = (5,30), pady=pady,sticky='ew')
 
         # Marca
         customtkinter.CTkLabel(frame, text="Marca", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=row, column=3, sticky='w',padx= (10,0),pady=pady)
         var_brand_filter = tk.StringVar(value="Todos las marcas")
         options_brand = ["Todas las marcas"]+self.get_field_options("Marca")
-        self.marcas_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_brand,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_brand_filter)
+        self.marcas_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_brand,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_brand_filter,fg_color=LIGHT_GRAY, button_color=GRAY1,button_hover_color=GRAY2, text_color="black")
         self.marcas_menu.grid(row=row ,column = 4, padx = (5,30), pady=pady,sticky='ew')
 
         # Tipo
         customtkinter.CTkLabel(frame, text="Tipo", fg_color="transparent",text_color="black",font=(DEFAULT_FONT,13.5)).grid(row=row, column=5, sticky='w',padx= (10,0),pady=pady)
         var_type_filter = tk.StringVar(value="Todos los tipos")
         options_types = ["Todos los tipos"]+self.get_field_options("Tipo")
-        self.tipos_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_types,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_type_filter)
+        self.tipos_menu = customtkinter.CTkOptionMenu(frame, width=220,dynamic_resizing=False, values=options_types,font=(DEFAULT_FONT,13.5), dropdown_font=(DEFAULT_FONT,14),variable=var_type_filter, fg_color=LIGHT_GRAY, button_color=GRAY1,button_hover_color=GRAY2, text_color="black")
         self.tipos_menu.grid(row=row ,column = 6, padx = (5,30), pady=pady,sticky='ew')
 
     def get_field_options(self, field):

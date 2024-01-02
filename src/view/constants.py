@@ -8,6 +8,8 @@ LIGHT_GRAY2 = "#e1e4eb"
 YELLOW = "#de910b"
 LIGHT_YELLOW="#ffe18f"
 BLUE = "#1f6aa5"
+GRAY1="#b2b3b3"
+GRAY2="#919191"
 
 RED_HOVER = "#9e0d3d"
 YELLOW_HOVER = "#ad7007"
