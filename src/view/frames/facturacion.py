@@ -343,11 +343,14 @@ class HeaderItems:
         self.frame.grid(row=row, column=column, sticky="nsew")
 
     def bind_events(self):
+
+        def hide_menus(event):
+            self.codigo.hide_menu()
+            self.descripcion.hide_menu()
+
         for f in [self.parent.frame, self.frame, self.parent.factura_items_frame.pricing_frame, self.parent.factura_data_frame, self.parent.scrollable_frame, self.parent.canvas, self.cant_label, self.codigo_label, self.desc_label, self.precio_label, self.subtotal_label]:
-            f.bind("<Button-1>", self.descripcion.hide_menu)
-            f.bind("<Button-3>", self.descripcion.hide_menu)
-            f.bind("<Button-1>", self.codigo.hide_menu)
-            f.bind("<Button-3>", self.codigo.hide_menu)
+            f.bind("<Button-3>", hide_menus)
+            f.bind("<Button-1>", hide_menus)
 
         def open_widget_menu(widget, field, linked_widget):
             self.change_suggestions(widget, field, linked_widget)
@@ -424,10 +427,13 @@ class EntryWithSuggestions:
 
     def set_options(self, options):
         self.menu.delete(0, "end") #Limpia las opciones ya cargadas
-        value = self.var.get()
 
-        if value != "":
-            for option in options:
+        # value = self.var.get()
+        # if value != "":
+        #     for option in options:
+        #         self.menu.add_command(label=option, command=lambda o=option: self.select_item(o))
+        
+        for option in options:
                 self.menu.add_command(label=option, command=lambda o=option: self.select_item(o))
             
     def get(self):
